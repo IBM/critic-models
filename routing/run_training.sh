@@ -21,6 +21,21 @@ LORA_DROPOUT=${11}
 SEED=${12}
 RESULTS_FILE=${13}
 
+# print the input arguments
+echo "config: $CONFIG"
+echo "df: $DF"
+echo "model_name: $MODEL_NAME"
+echo "output_dir: $OUTPUT_DIR"
+echo "learning_rate: $LEARNING_RATE"
+echo "batch_size: $BATCH_SIZE"
+echo "num_epochs: $NUM_EPOCHS"
+echo "weight_decay: $WEIGHT_DECAY"
+echo "lora_r: $LORA_R"
+echo "lora_alpha: $LORA_ALPHA"
+echo "lora_dropout: $LORA_DROPOUT"
+echo "seed: $SEED"
+echo "results_file: $RESULTS_FILE"
+
 # Run the Python script with the provided arguments
 python routing/train_self_critic_prediction.py \
   --config $CONFIG \
