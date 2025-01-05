@@ -39,7 +39,11 @@ def generate_training_data(df, config):
         sample = row["sample_text"]
         generator_model = row["best_init_generation_model"]
         generator_model = sorted_models[generator_model]
-        model_response = load_initial_response(all_models_jsons[generator_model], sample)
+        try:
+            model_response = load_initial_response(all_models_jsons[generator_model], sample)
+        except KeyError:
+            print(f"Sample {sample} not found in model {generator_model}")
+            continue
         labels = np.zeros((2,), dtype=int)
         labels[int(row["is_self_critic_best"])] = 1
         dataset.append({"sample_text": sample, "initial_response": model_response,
