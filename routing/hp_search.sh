@@ -2,7 +2,7 @@
 
 # Define hyperparameter grid
 learning_rates=(2e-5 3e-5)
-batch_sizes=(4 8)
+batch_sizes=(2 3)
 num_epochs=(3 5)
 weight_decays=(0.01 0.1)
 lora_rs=(8 16)
