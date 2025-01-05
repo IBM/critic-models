@@ -16,6 +16,8 @@ model_name="google/gemma-2-2b-it"
 # Output results file
 results_file="_output/binary_classification_results.csv"
 
+mkdir slurm_logs
+
 # Ensure results file exists with a header
 if [ ! -f "$results_file" ]; then
   echo "model_name,learning_rate,batch_size,num_epochs,weight_decay,lora_r,lora_alpha,lora_dropout,seed,f1,accuracy" > "$results_file"
@@ -30,8 +32,9 @@ for lr in "${learning_rates[@]}"; do
             for dropout in "${lora_dropouts[@]}"; do
               for seed in "${seeds[@]}"; do
                 job_name="${lr}lr_${bs}bs_${epochs}epochs_${wd}wd_${r}r_${alpha}alpha_${dropout}dropout_${seed}seed"
-                sbatch --mem=40gb -c2 --time=2:0:0 --gres=gpu:1,vmem:40g --error=${job_name}/error_log_job%A.txt \
-                  --output=${job_name}/output_log_job%A.txt --job-name=${job_name} --mail-user=gili.lior@mail.huji.ac.il \
+                mkdir slurm_logs/$job_name
+                sbatch --mem=40gb -c2 --time=2:0:0 --gres=gpu:1,vmem:40g --error=slurm_logs/$job_name/error_log_job%A.txt \
+                  --output=slurm_logs/$job_name/output_log_job%A.txt --job-name=${job_name} --mail-user=gili.lior@mail.huji.ac.il \
                   --mail-type=ALL "./routing/run_training.sh" $config $df $model_name $lr $bs $epochs $wd $r $alpha $dropout $seed $results_file
                 break
               done
