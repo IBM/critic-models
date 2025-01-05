@@ -1,7 +1,5 @@
 #!/bin/bash
 
-run_name="${3}_model_${4}_lr_${5}_bs_${6}_epochs_${7}_wd_${8}_r_${9}_alpha_${10}_dropout_${11}_seed_${12}"
-
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 12 ]; then
     echo "Usage: $0 <config> <df> <model_name> <learning_rate> <batch_size> <num_epochs> <weight_decay> <lora_r> <lora_alpha> <lora_dropout> <seed> <results_file>"
@@ -35,17 +33,6 @@ echo "lora_alpha: $LORA_ALPHA"
 echo "lora_dropout: $LORA_DROPOUT"
 echo "seed: $SEED"
 echo "results_file: $RESULTS_FILE"
-echo "run_name: $run_name"
-
-#SBATCH --mem=40gb
-#SBATCH -c2
-#SBATCH --time=1-12
-#SBATCH --gres=gpu:1,vmem:40g
-#SBATCH --error=${run_name}/error_log_job%A.txt
-#SBATCH --output=${run_name}/output_log_job%A.txt
-#SBATCH --job-name=${run_name}
-#SBATCH --mail-user=gili.lior@mail.huji.ac.il
-#SBATCH --mail-type=ALL
 
 export HF_HOME=/cs/snapless/gabis/gililior/hf_cache
 export PYTHONPATH=./
