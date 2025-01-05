@@ -22,7 +22,7 @@ SEED=${12}
 RESULTS_FILE=${13}
 
 # Run the Python script with the provided arguments
-python train_model.py \
+python routing/train_self_critic_prediction.py \
   --config $CONFIG \
   --df $DF \
   --model_name $MODEL_NAME \
