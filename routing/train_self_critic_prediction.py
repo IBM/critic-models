@@ -131,17 +131,18 @@ def main(path_to_config, path_to_df, model_name):
         predictions = torch.argmax(outputs.logits, dim=-1)
 
     # calculate accuracy, f1, etc.
-    accuracy = (predictions == tokenized_datasets["test"]["labels"]).float().mean
-    f1 = f1_score(tokenized_datasets["test"]["labels"], predictions, average='binary')  # Calculate F1 score
+    test_labels = tokenized_datasets["test"]["labels"]
+    accuracy = (predictions == test_labels).float().mean
+    f1 = f1_score(test_labels, predictions, average='binary')  # Calculate F1 score
 
-    baselines_accuracy_all_0 = (tokenized_datasets["test"]["labels"] == 0).float().mean()
-    baselines_accuracy_all_1 = (tokenized_datasets["test"]["labels"] == 1).float().mean()
+    baselines_accuracy_all_0 = (test_labels == 0).float().mean()
+    baselines_accuracy_all_1 = (test_labels == 1).float().mean()
     print(f"Accuracy: {accuracy}")
     print(f"Baseline accuracy all 0: {baselines_accuracy_all_0}")
     print(f"Baseline accuracy all 1: {baselines_accuracy_all_1}")
-    baseline_f1_all_0 = f1_score(tokenized_datasets["test"]["label"], [0] * len(tokenized_datasets["test"]["label"]), average='binary')
+    baseline_f1_all_0 = f1_score(test_labels, [0] * len(test_labels), average='binary')
     print(f"F1 Score: {f1}")
-    baseline_f1_all_1 = f1_score(tokenized_datasets["test"]["label"], [1] * len(tokenized_datasets["test"]["label"]), average='binary')
+    baseline_f1_all_1 = f1_score(test_labels, [1] * len(test_labels), average='binary')
     print(f"Baseline F1 all 0: {baseline_f1_all_0}")
     print(f"Baseline F1 all 1: {baseline_f1_all_1}")
 
