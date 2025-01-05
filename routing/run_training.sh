@@ -1,5 +1,9 @@
 #!/bin/bash
 
+export HF_HOME=/cs/snapless/gabis/gililior/hf_cache
+export PYTHONPATH=./
+source /cs/snapless/gabis/gililior/virtual_envs/critic-routing/bin/activate
+
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 12 ]; then
     echo "Usage: $0 <config> <df> <model_name> <learning_rate> <batch_size> <num_epochs> <weight_decay> <lora_r> <lora_alpha> <lora_dropout> <seed> <results_file>"
