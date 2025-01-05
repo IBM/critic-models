@@ -60,7 +60,7 @@ def main(path_to_config, path_to_df, model_name):
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     base_model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=2, device_map='auto', torch_dtype='float16')  # Binary classification
+        model_name, num_labels=2, device_map='auto', torch_dtype='bfloat16')  # Binary classification
 
     lora_config = LoraConfig(
         task_type=TaskType.SEQ_CLS,  # Sequence classification
@@ -99,7 +99,6 @@ def main(path_to_config, path_to_df, model_name):
         logging_dir="./logs",
         logging_steps=10,
         load_best_model_at_end=True,
-        fp16=True,
     )
 
     # Define Trainer
