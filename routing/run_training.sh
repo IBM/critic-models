@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Check if the correct number of arguments is provided
-if [ "$#" -ne 11 ]; then
-    echo "Usage: $0 <config> <df> <model_name> <output_dir> <learning_rate> <batch_size> <num_epochs> <weight_decay> <lora_r> <lora_alpha> <lora_dropout> <seed>"
+if [ "$#" -ne 13 ]; then
+    echo "Usage: $0 <config> <df> <model_name> <output_dir> <learning_rate> <batch_size> <num_epochs> <weight_decay> <lora_r> <lora_alpha> <lora_dropout> <seed> <results_file>"
     exit 1
 fi
 
@@ -19,6 +19,7 @@ LORA_R=$9
 LORA_ALPHA=${10}
 LORA_DROPOUT=${11}
 SEED=${12}
+RESULTS_FILE=${13}
 
 # Run the Python script with the provided arguments
 python train_model.py \
@@ -33,4 +34,5 @@ python train_model.py \
   --lora_r $LORA_R \
   --lora_alpha $LORA_ALPHA \
   --lora_dropout $LORA_DROPOUT \
-  --seed $SEED
+  --seed $SEED \
+  --results_file $RESULTS_FILE
