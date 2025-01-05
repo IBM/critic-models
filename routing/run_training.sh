@@ -39,7 +39,6 @@ python routing/train_self_critic_prediction.py \
   --config $CONFIG \
   --df $DF \
   --model_name $MODEL_NAME \
-  --output_dir $OUTPUT_DIR \
   --learning_rate $LEARNING_RATE \
   --batch_size $BATCH_SIZE \
   --num_epochs $NUM_EPOCHS \
