@@ -163,10 +163,10 @@ def main(path_to_config, path_to_df, model_name, learning_rate, batch_size, num_
     # Train the model
     trainer.train()
 
-    # Save the model
-    model_name_for_save = model_name.split("/")[-1] + '_binary_classifier'
-    path_to_save = os.path.join(config["model_save_dir"], model_name_for_save)
-    model.save_pretrained(path_to_save)
+    # # Save the model
+    # model_name_for_save = model_name.split("/")[-1] + '_binary_classifier'
+    # path_to_save = os.path.join(config["model_save_dir"], model_name_for_save)
+    # model.save_pretrained(path_to_save)
 
     # Evaluate the model
     predictions, labels, _ = trainer.predict(tokenized_datasets["test"])
