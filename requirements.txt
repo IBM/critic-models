@@ -8,3 +8,5 @@ openai
 vllm
 transformers
 sentence_transformers
+peft
+accelerate
