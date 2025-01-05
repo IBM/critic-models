@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if the correct number of arguments is provided
-if [ "$#" -ne 12 ]; then
+if [ "$#" -ne 13 ]; then
     echo "Usage: $0 <config> <df> <model_name> <output_dir> <learning_rate> <batch_size> <num_epochs> <weight_decay> <lora_r> <lora_alpha> <lora_dropout> <seed> <results_file>"
     exit 1
 fi
