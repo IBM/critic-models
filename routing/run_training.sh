@@ -1,8 +1,6 @@
 #!/bin/bash
 
-export HF_HOME=/cs/snapless/gabis/gililior/hf_cache
-export PYTHONPATH=./
-source /cs/snapless/gabis/gililior/virtual_envs/critic-routing/bin/activate
+run_name="${3}_model_${4}_lr_${5}_bs_${6}_epochs_${7}_wd_${8}_r_${9}_alpha_${10}_dropout_${11}_seed_${12}"
 
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 12 ]; then
@@ -37,6 +35,21 @@ echo "lora_alpha: $LORA_ALPHA"
 echo "lora_dropout: $LORA_DROPOUT"
 echo "seed: $SEED"
 echo "results_file: $RESULTS_FILE"
+echo "run_name: $run_name"
+
+#SBATCH --mem=40gb
+#SBATCH -c2
+#SBATCH --time=1-12
+#SBATCH --gres=gpu:1,vmem:40g
+#SBATCH --error=${run_name}/error_log_job%A.txt
+#SBATCH --output=${run_name}/output_log_job%A.txt
+#SBATCH --job-name=${run_name}
+#SBATCH --mail-user=gili.lior@mail.huji.ac.il
+#SBATCH --mail-type=ALL
+
+export HF_HOME=/cs/snapless/gabis/gililior/hf_cache
+export PYTHONPATH=./
+source /cs/snapless/gabis/gililior/virtual_envs/critic-routing/bin/activate
 
 # Run the Python script with the provided arguments
 python routing/train_self_critic_prediction.py \
