@@ -4,7 +4,6 @@ from collections import Counter
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import f1_score
 from sklearn.linear_model import LogisticRegression, LinearRegression
-from dictances import bhattacharyya
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC, SVR
 from sklearn.multioutput import MultiOutputRegressor
@@ -19,9 +18,9 @@ from sklearn.neighbors import RadiusNeighborsClassifier, KNeighborsClassifier, K
 import pandas as pd
 import scipy.stats as stats
 from scipy.stats import entropy
-from utils_dir.analysis import prepare_df
-from routing.cluster_by_best_critic import parse_improvement_pairs
-from routing.pipeline import calc_scores
+from utils.analysis import prepare_df
+# from routing.cluster_by_best_critic import parse_improvement_pairs
+# from routing.pipeline import calc_scores
 from collections import Counter
 from tqdm import tqdm
 
@@ -675,19 +674,6 @@ def eval_pred_kl(estimator, X_test, y_test):
     scores = np.array(scores)
     scores = scores[scores!=np.inf]
     return -np.sum(scores)
-
-def eval_pred_bhattacharyya(estimator, X_test, y_test):
-    preds = estimator.predict(X_test)
-    preds = np.exp(preds)
-    scores = []
-    for t, p in zip(y_test, preds):
-        p = p / sum(p)
-        dict_t = {i: t[i] for i in range(len(t))}
-        dict_p = {i: p[i] for i in range(len(p))}
-        bhattacharyya_score = bhattacharyya(dict_t, dict_p)
-        scores.append(bhattacharyya_score)
-    scores = np.array(scores)
-    return np.sum(scores)
 
 def eval_pred_f1(estimator, X_test, y_test):
     preds = estimator.predict(X_test)
