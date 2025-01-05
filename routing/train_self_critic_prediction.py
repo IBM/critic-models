@@ -99,6 +99,7 @@ def main(path_to_config, path_to_df, model_name):
         logging_dir="./logs",
         logging_steps=10,
         load_best_model_at_end=True,
+        fp16=True,
     )
 
     # Define Trainer
