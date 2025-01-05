@@ -16,7 +16,9 @@ model_name="google/gemma-2-2b-it"
 # Output results file
 results_file="_output/binary_classification_results.csv"
 
-mkdir slurm_logs
+if [ ! -d "slurm_logs" ]; then
+  mkdir slurm_logs
+fi
 
 # Ensure results file exists with a header
 if [ ! -f "$results_file" ]; then
