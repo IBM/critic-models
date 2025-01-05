@@ -2,25 +2,27 @@
 
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 11 ]; then
-    echo "Usage: $0 <df> <model_name> <output_dir> <learning_rate> <batch_size> <num_epochs> <weight_decay> <lora_r> <lora_alpha> <lora_dropout> <seed>"
+    echo "Usage: $0 <config> <df> <model_name> <output_dir> <learning_rate> <batch_size> <num_epochs> <weight_decay> <lora_r> <lora_alpha> <lora_dropout> <seed>"
     exit 1
 fi
 
 # Assign input arguments to variables
-DF=$1
-MODEL_NAME=$2
-OUTPUT_DIR=$3
-LEARNING_RATE=$4
-BATCH_SIZE=$5
-NUM_EPOCHS=$6
-WEIGHT_DECAY=$7
-LORA_R=$8
-LORA_ALPHA=$9
-LORA_DROPOUT=${10}
-SEED=${11}
+CONFIG=$1
+DF=$2
+MODEL_NAME=$3
+OUTPUT_DIR=$4
+LEARNING_RATE=$5
+BATCH_SIZE=$6
+NUM_EPOCHS=$7
+WEIGHT_DECAY=$8
+LORA_R=$9
+LORA_ALPHA=${10}
+LORA_DROPOUT=${11}
+SEED=${12}
 
 # Run the Python script with the provided arguments
 python train_model.py \
+  --config $CONFIG \
   --df $DF \
   --model_name $MODEL_NAME \
   --output_dir $OUTPUT_DIR \
