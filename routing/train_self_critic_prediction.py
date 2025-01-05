@@ -10,6 +10,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trai
 from sklearn.metrics import f1_score
 from tqdm import tqdm
 from peft import LoraConfig, get_peft_model, TaskType
+import os
 
 SPLIT = 'train'
 
@@ -55,8 +56,9 @@ def generate_training_data(df, config):
 def main(path_to_config, path_to_df, model_name):
     with open(path_to_config, 'r') as f:
         config = json.load(f)
-    df = pd.read_csv(path_to_df)[:1000]
+    df = pd.read_csv(path_to_df)
     dataset = generate_training_data(df, config)
+    os.makedirs(config["model_save_dir"], exist_ok=True)
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     base_model = AutoModelForSequenceClassification.from_pretrained(
@@ -114,6 +116,8 @@ def main(path_to_config, path_to_df, model_name):
     trainer.train()
 
     # Save the model
+    model_name_for_save = model_name.split("/")[-1] + '_binary_classifier'
+    path_to_save = os.path.join(config["model_save_dir"], model_name_for_save)
     model.save_pretrained("gemma2-2b_binary_classifier")
     tokenizer.save_pretrained("gemma2-2b_binary_classifier")
 
@@ -127,11 +131,11 @@ def main(path_to_config, path_to_df, model_name):
         predictions = torch.argmax(outputs.logits, dim=-1)
 
     # calculate accuracy, f1, etc.
-    accuracy = (predictions == tokenized_datasets["test"]["label"]).float().mean
-    f1 = f1_score(tokenized_datasets["test"]["label"], predictions, average='binary')  # Calculate F1 score
+    accuracy = (predictions == tokenized_datasets["test"]["labels"]).float().mean
+    f1 = f1_score(tokenized_datasets["test"]["labels"], predictions, average='binary')  # Calculate F1 score
 
-    baselines_accuracy_all_0 = (tokenized_datasets["test"]["label"] == 0).float().mean()
-    baselines_accuracy_all_1 = (tokenized_datasets["test"]["label"] == 1).float().mean()
+    baselines_accuracy_all_0 = (tokenized_datasets["test"]["labels"] == 0).float().mean()
+    baselines_accuracy_all_1 = (tokenized_datasets["test"]["labels"] == 1).float().mean()
     print(f"Accuracy: {accuracy}")
     print(f"Baseline accuracy all 0: {baselines_accuracy_all_0}")
     print(f"Baseline accuracy all 1: {baselines_accuracy_all_1}")

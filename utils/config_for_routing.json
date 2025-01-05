@@ -1,4 +1,5 @@
 {
+  "model_save_dir": "/cs/snapless/gabis/gililior/models_for_critic_routing",
   "generation_init_dir": "/cs/snapless/gabis/gililior/arena_data_final/generation_pipeline/init_response",
   "generation_init_path": "{generation_init_dir}/{generator_model}-init-response-{split}.json",
   "init_dir": "/cs/snapless/gabis/gililior/arena_data_final/llm_aaj_constraints_evaluation/initial",
