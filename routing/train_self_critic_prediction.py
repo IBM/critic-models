@@ -1,18 +1,26 @@
-
+import random
 from argparse import ArgumentParser
 import json
-
 import numpy as np
 from datasets import Dataset
 import pandas as pd
 import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
-from sklearn.metrics import f1_score
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments, set_seed
+from sklearn.metrics import f1_score, accuracy_score
 from tqdm import tqdm
 from peft import LoraConfig, get_peft_model, TaskType
 import os
 
 SPLIT = 'train'
+
+
+def set_random_seed(seed: int):
+    """Set seed for reproducibility."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 
 def load_initial_response(json_data_for_model, sample):
@@ -30,6 +38,7 @@ def load_all_models_jsons(config, generator_models):
             json_data = json.load(f)
         all_jsons[model] = json_data
     return all_jsons
+
 
 def generate_training_data(df, config):
     sorted_models = sorted(config["generator_models"])
@@ -57,31 +66,61 @@ def generate_training_data(df, config):
     return dataset
 
 
-def main(path_to_config, path_to_df, model_name):
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    accuracy = accuracy_score(labels, predictions)
+    f1 = f1_score(labels, predictions, average='binary')
+    print(f"Evaluation - Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
+    return {"accuracy": accuracy, "f1": f1}
+
+
+def save_results(output_file, model_name, hyperparams, f1, accuracy):
+    """Save the results to a CSV file for comparison."""
+    results = {
+        "model_name": model_name,
+        **hyperparams,
+        "f1": f1,
+        "accuracy": accuracy,
+    }
+    df = pd.DataFrame([results])
+
+    # Append results to the file or create a new one if it doesn't exist
+    if not os.path.exists(output_file):
+        df.to_csv(output_file, index=False)
+    else:
+        df.to_csv(output_file, mode='a', header=False, index=False)
+
+
+def main(path_to_config, path_to_df, model_name, learning_rate, batch_size, num_epochs, weight_decay, lora_r,
+         lora_alpha, lora_dropout, results_file, seed):
+    # Set seed for reproducibility
+    set_seed(seed)
+    set_random_seed(seed)
+
+    # Load config and data
     with open(path_to_config, 'r') as f:
         config = json.load(f)
     df = pd.read_csv(path_to_df)
     dataset = generate_training_data(df, config)
-    os.makedirs(config["model_save_dir"], exist_ok=True)
+    dataset = dataset.shuffle(seed=seed).train_test_split(test_size=0.2)
 
+    # Load model and tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     base_model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=2, device_map='auto', torch_dtype='bfloat16')  # Binary classification
+        model_name, num_labels=2, device_map='auto', torch_dtype='bfloat16'
+    )
 
+    # Initialize LoRA config
     lora_config = LoraConfig(
-        task_type=TaskType.SEQ_CLS,  # Sequence classification
-        r=8,  # Low-rank update matrix
-        lora_alpha=16,  # Scaling factor
-        target_modules=["q_proj", "v_proj"],  # Target specific layers (adjust based on model architecture)
-        lora_dropout=0.1,  # Dropout for LoRA layers
-        bias="none"  # Freeze biases
+        task_type=TaskType.SEQ_CLS,
+        r=lora_r,
+        lora_alpha=lora_alpha,
+        target_modules=["q_proj", "v_proj"],
+        lora_dropout=lora_dropout,
+        bias="none"
     )
     model = get_peft_model(base_model, lora_config)
-
-    # Assuming `dataset` is your Dataset object with "text" and "label" columns
-    # Shuffle and split the dataset into train and test
-    dataset = dataset.shuffle(seed=42)
-    train_test_split = dataset.train_test_split(test_size=0.2)
 
     # Tokenize the dataset
     def tokenize_function(examples):
@@ -89,22 +128,26 @@ def main(path_to_config, path_to_df, model_name):
             examples["initial_response"], truncation=True, padding="longest", max_length=2048
         )
 
-    tokenized_datasets = train_test_split.map(tokenize_function, batched=True)
+    tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
     # Define training arguments
     training_args = TrainingArguments(
         output_dir="./results",
-        eval_strategy="epoch",
-        save_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=2,
-        gradient_accumulation_steps=4,
-        per_device_eval_batch_size=2,
-        num_train_epochs=3,
-        weight_decay=0.01,
+        eval_strategy="steps",
+        save_strategy="steps",
+        save_steps=1000,  # Save every 1000 steps
+        eval_steps=1000,  # Evaluate every 1000 steps
         logging_dir="./logs",
-        logging_steps=10,
+        logging_steps=100,  # Log every 100 steps
+        learning_rate=learning_rate,
+        per_device_train_batch_size=batch_size,
+        gradient_accumulation_steps=8 // batch_size,
+        per_device_eval_batch_size=batch_size,
+        num_train_epochs=num_epochs,
+        weight_decay=weight_decay,
         load_best_model_at_end=True,
+        metric_for_best_model="f1",
+        greater_is_better=True
     )
 
     # Define Trainer
@@ -113,7 +156,8 @@ def main(path_to_config, path_to_df, model_name):
         args=training_args,
         train_dataset=tokenized_datasets["train"],
         eval_dataset=tokenized_datasets["test"],
-        processing_class=tokenizer
+        processing_class=tokenizer,
+        compute_metrics=compute_metrics
     )
 
     # Train the model
@@ -122,41 +166,63 @@ def main(path_to_config, path_to_df, model_name):
     # Save the model
     model_name_for_save = model_name.split("/")[-1] + '_binary_classifier'
     path_to_save = os.path.join(config["model_save_dir"], model_name_for_save)
-    model.save_pretrained("gemma2-2b_binary_classifier")
-    tokenizer.save_pretrained("gemma2-2b_binary_classifier")
+    model.save_pretrained(path_to_save)
 
-    # Inference on new data
-    new_texts = tokenized_datasets["test"]["initial_response"]
-    inputs = tokenizer(new_texts, return_tensors="pt", truncation=True, padding="max_length", max_length=512)
-    inputs = {key: val.to(model.device) for key, val in inputs.items()}
+    # Evaluate the model
+    predictions, labels, _ = trainer.predict(tokenized_datasets["test"])
+    predictions = predictions.argmax(axis=1)
+    accuracy = accuracy_score(labels, predictions)
+    f1 = f1_score(labels, predictions, average='binary')
 
-    with torch.no_grad():
-        outputs = model(**inputs)
-        predictions = torch.argmax(outputs.logits, dim=-1)
+    # Print model name and hyperparameters
+    print(f"Model: {model_name}")
+    print(
+        f"Hyperparameters: Learning Rate={learning_rate}, Batch Size={batch_size}, Num Epochs={num_epochs}, Weight Decay={weight_decay}, LoRA R={lora_r}, LoRA Alpha={lora_alpha}, LoRA Dropout={lora_dropout}")
+    print(f"Final Accuracy: {accuracy}")
+    print(f"Final F1 Score: {f1}")
 
-    # calculate accuracy, f1, etc.
-    test_labels = tokenized_datasets["test"]["labels"]
-    accuracy = (predictions == test_labels).float().mean
-    f1 = f1_score(test_labels, predictions, average='binary')  # Calculate F1 score
-
-    baselines_accuracy_all_0 = (test_labels == 0).float().mean()
-    baselines_accuracy_all_1 = (test_labels == 1).float().mean()
-    print(f"Accuracy: {accuracy}")
-    print(f"Baseline accuracy all 0: {baselines_accuracy_all_0}")
-    print(f"Baseline accuracy all 1: {baselines_accuracy_all_1}")
-    baseline_f1_all_0 = f1_score(test_labels, [0] * len(test_labels), average='binary')
-    print(f"F1 Score: {f1}")
-    baseline_f1_all_1 = f1_score(test_labels, [1] * len(test_labels), average='binary')
-    print(f"Baseline F1 all 0: {baseline_f1_all_0}")
-    print(f"Baseline F1 all 1: {baseline_f1_all_1}")
-
-
+    # Save results to a file
+    hyperparams = {
+        "learning_rate": learning_rate,
+        "batch_size": batch_size,
+        "num_epochs": num_epochs,
+        "weight_decay": weight_decay,
+        "lora_r": lora_r,
+        "lora_alpha": lora_alpha,
+        "lora_dropout": lora_dropout,
+        "seed": seed,
+    }
+    save_results(results_file, model_name, hyperparams, f1, accuracy)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--df', type=str, help='path to dataframe with labels')
-    parser.add_argument('--config', type=str, help='path to config file')
-    parser.add_argument('--model_name', type=str, help='name of the model to use')
+    parser.add_argument('--config', type=str, required=True, help='Path to config file')
+    parser.add_argument('--df', type=str, required=True, help='Path to dataframe with labels')
+    parser.add_argument('--model_name', type=str, required=True, help='Name of the model to use')
+    parser.add_argument('--learning_rate', type=float, required=True, help='Learning rate for training')
+    parser.add_argument('--batch_size', type=int, required=True, help='Batch size for training')
+    parser.add_argument('--num_epochs', type=int, required=True, help='Number of training epochs')
+    parser.add_argument('--weight_decay', type=float, required=True, help='Weight decay for optimization')
+    parser.add_argument('--lora_r', type=int, required=True, help='LoRA parameter r (rank)')
+    parser.add_argument('--lora_alpha', type=int, required=True, help='LoRA parameter alpha (scaling factor)')
+    parser.add_argument('--lora_dropout', type=float, required=True, help='LoRA parameter dropout rate')
+    parser.add_argument('--results_file', type=str, required=True,
+                        help='Path to results file for saving metrics and hyperparameters')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
     args = parser.parse_args()
-    main(args.config, args.df, args.model_name)
+
+    main(
+        args.config,
+        args.df,
+        args.model_name,
+        args.learning_rate,
+        args.batch_size,
+        args.num_epochs,
+        args.weight_decay,
+        args.lora_r,
+        args.lora_alpha,
+        args.lora_dropout,
+        args.results_file,
+        args.seed
+    )
