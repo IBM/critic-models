@@ -38,20 +38,12 @@ for lr in "${learning_rates[@]}"; do
                 sbatch --mem=40gb -c2 --time=12:0:0 --gres=gpu:1,vmem:40g --error=slurm_logs/$job_name/error_log_job%A.txt \
                   --output=slurm_logs/$job_name/output_log_job%A.txt --job-name=${job_name} --mail-user=gili.lior@mail.huji.ac.il \
                   --mail-type=ALL "./routing/run_training.sh" $config $df $model_name $lr $bs $epochs $wd $r $alpha $dropout $seed $results_file
-                break
               done
-              break
             done
-            break
           done
-          break
         done
-        break
       done
-      break
     done
-    break
   done
-  break
 done
 
