@@ -35,7 +35,7 @@ for lr in "${learning_rates[@]}"; do
               for seed in "${seeds[@]}"; do
                 job_name="${lr}lr_${bs}bs_${epochs}epochs_${wd}wd_${r}r_${alpha}alpha_${dropout}dropout_${seed}seed"
                 mkdir slurm_logs/$job_name
-                sbatch --mem=40gb -c2 --time=2:0:0 --gres=gpu:1,vmem:40g --error=slurm_logs/$job_name/error_log_job%A.txt \
+                sbatch --mem=40gb -c2 --time=12:0:0 --gres=gpu:1,vmem:40g --error=slurm_logs/$job_name/error_log_job%A.txt \
                   --output=slurm_logs/$job_name/output_log_job%A.txt --job-name=${job_name} --mail-user=gili.lior@mail.huji.ac.il \
                   --mail-type=ALL "./routing/run_training.sh" $config $df $model_name $lr $bs $epochs $wd $r $alpha $dropout $seed $results_file
                 break
