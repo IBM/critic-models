@@ -141,7 +141,7 @@ class LLM_Classifier:
     def train_model(self):
         # Initialize the Trainer
         training_args = self.get_training_args()
-        data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
+        data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer, max_length=2048)
         trainer = Trainer(
             model=self.hf_model,
             args=training_args,
