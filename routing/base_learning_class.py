@@ -62,7 +62,7 @@ class LLM_Classifier:
 
         def tokenize_function(examples):
             return self.tokenizer(
-                examples["initial_response"], truncation=True
+                examples["initial_response"], truncation=True, max_length=MAX_LENGTH
             )
 
         tokenized_dataset = dataset.map(tokenize_function, batched=True)
@@ -151,7 +151,7 @@ class LLM_Classifier:
             model=self.hf_model,
             args=training_args,
             train_dataset=self.dataset["train"],
-            eval_dataset=self.dataset["test"].sample(100),
+            eval_dataset=self.dataset["test"].select(range(100)),
             compute_metrics=compute_metrics,
             data_collator=data_collator
         )
@@ -167,7 +167,7 @@ class LLM_Classifier:
     def evaluate_model(self, trainer):
 
         # Evaluate the model
-        predictions, labels, _ = trainer.predict(self.dataset["test"].sample(100))
+        predictions, labels, _ = trainer.predict(self.dataset["test"].select(range(100)))
         predictions = predictions.argmax(axis=1)
         res = self.unique_class_eval(labels, predictions)
 
