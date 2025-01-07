@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from routing.self_critic_classifier import SelfCriticClassifier
 from routing.multi_class_classifier import MultiCriticClassifier
 from routing.multi_class_classifier_with_probabilities import MultiProbableCriticClassifier
+from routing.multi_label_regressor import MultiLabelRegressor
 
 
 def get_classifier_class(classifier_name):
@@ -11,13 +12,15 @@ def get_classifier_class(classifier_name):
         return MultiCriticClassifier
     elif classifier_name == 'prob-multi-class':
         return MultiProbableCriticClassifier
+    elif classifier_name == 'regressor':
+        return MultiLabelRegressor
     else:
         raise ValueError(f'Invalid classifier name: {classifier_name}')
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--classifier_name', type=str, choices=['self-critic', 'multi-class', 'prob-multi-class'], required=True,
+    parser.add_argument('--classifier_name', type=str, choices=['self-critic', 'multi-class', 'prob-multi-class', 'regressor'], required=True,
                         help='Name of the classifier to use')
     parser.add_argument('--config', type=str, required=True, help='Path to config file')
     parser.add_argument('--df', type=str, required=True, help='Path to dataframe with labels')
