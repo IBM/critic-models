@@ -17,6 +17,8 @@ SPLIT = 'train'
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
+    if labels.ndim == 2:
+        labels = np.argmax(labels, axis=-1)
     accuracy = accuracy_score(labels, predictions)
     if np.max(labels) > 1:
         f1 = f1_score(labels, predictions, average='micro')
