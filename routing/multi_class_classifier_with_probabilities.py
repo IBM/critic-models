@@ -7,7 +7,7 @@ from sklearn.metrics import f1_score, accuracy_score
 import re
 
 
-class MultiCriticClassifier(LLM_Classifier):
+class MultiProbableCriticClassifier(LLM_Classifier):
     def load_hf_model(self, model_name):
         base_model = AutoModelForSequenceClassification.from_pretrained(
             model_name, num_labels=6, device_map='auto', torch_dtype='bfloat16'
@@ -29,11 +29,15 @@ class MultiCriticClassifier(LLM_Classifier):
                 counter += 1
                 continue
             raw_scores = eval(re.sub(r"\s+", ", ", row['scores']))
+            labels = raw_scores[row["best_init_generation_model"]]
+            exp_x = np.exp(labels - np.max(labels))  # Subtract max for numerical stability
+            labels = exp_x / np.sum(exp_x, axis=-1, keepdims=True)
             dataset.append({"sample_text": sample, "initial_response": model_response,
                             "best_init_generation_model": generator_model,
                             "revision_scores": np.array(raw_scores[row["best_init_generation_model"]]),
                             "best_revised_scores": np.max(raw_scores[row["best_init_generation_model"]]),
-                            "labels": int(row["best_critic"]),
+                            "best_critic": int(row["best_critic"]),
+                            "labels": labels,
                             })
         if counter > 0:
             print(f"skip {counter} samples")
