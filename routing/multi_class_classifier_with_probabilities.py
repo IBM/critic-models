@@ -1,9 +1,8 @@
-from routing.base_learning_class import LLM_Classifier
+from routing.base_learning_class import LLM_Classifier, multi_class_eval
 from transformers import AutoModelForSequenceClassification
 from datasets import Dataset
 import numpy as np
 from tqdm import tqdm
-from sklearn.metrics import f1_score, accuracy_score
 import re
 
 
@@ -46,25 +45,6 @@ class MultiProbableCriticClassifier(LLM_Classifier):
 
     def unique_class_eval(self, labels, predictions):
         labels = np.argmax(labels, axis=1)
-        accuracy = accuracy_score(labels, predictions)
-        f1_micro = f1_score(labels, predictions, average='micro')
-        f1_macro = f1_score(labels, predictions, average='macro')
         test_set = self.dataset["test"]
         test_set = test_set.select(range(100))
-        gold_scores = test_set["best_revised_scores"]
-        revision_scores = np.array(test_set["revision_scores"])
-        predicted_scores = revision_scores[np.arange(len(predictions)), predictions]
-        init_scores = revision_scores[:, -1]
-        distance_from_gold = np.mean(gold_scores - predicted_scores)
-        improvement_over_init = np.mean(predicted_scores - init_scores)
-        critic_is_needed = np.where(labels != 5)[0]
-        print(critic_is_needed)
-        improvement_over_init_when_critic_is_needed = np.mean(
-            predicted_scores[critic_is_needed] - init_scores[critic_is_needed])
-        distance_from_gold_when_critic_is_needed = np.mean(
-            gold_scores[critic_is_needed] - predicted_scores[critic_is_needed])
-
-        return {"accuracy": accuracy, "f1_micro": f1_micro, "f1_macro": f1_macro,
-                "distance_from_gold": distance_from_gold, "improvement_over_init": improvement_over_init,
-                "improvement_over_init_when_critic_is_needed": improvement_over_init_when_critic_is_needed,
-                "distance_from_gold_when_critic_is_needed": distance_from_gold_when_critic_is_needed}
+        return multi_class_eval(labels, predictions, test_set)
