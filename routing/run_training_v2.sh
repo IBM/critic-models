@@ -42,7 +42,7 @@ source /cs/snapless/gabis/gililior/virtual_envs/critic-routing/bin/activate
 
 # Run the Python script with the provided arguments
 python routing/run_training.py \
-  --class_name $CLASS_NAME \
+  --classifier_name $CLASS_NAME \
   --config $CONFIG \
   --df $DF \
   --model_name $MODEL_NAME \
