@@ -126,7 +126,7 @@ class LLM_Classifier:
             eval_strategy="steps",
             save_strategy="steps",
             save_steps=1000,  # Save every 1000 steps
-            eval_steps=1000,  # Evaluate every 1000 steps
+            eval_steps=100,  # Evaluate every 500 steps
             logging_dir="./logs",
             logging_steps=100,  # Log every 100 steps
             learning_rate=self.learning_rate,
