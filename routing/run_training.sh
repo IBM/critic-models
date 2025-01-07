@@ -39,7 +39,7 @@ export PYTHONPATH=./
 source /cs/snapless/gabis/gililior/virtual_envs/critic-routing/bin/activate
 
 # Run the Python script with the provided arguments
-python routing/train_self_critic_prediction.py \
+python routing/run_training.py \
   --config $CONFIG \
   --df $DF \
   --model_name $MODEL_NAME \
