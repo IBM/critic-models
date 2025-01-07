@@ -58,8 +58,11 @@ class LLM_Classifier:
                 examples["initial_response"], truncation=True, padding="longest", max_length=2048
             )
 
-        tokenized_datasets = dataset.map(tokenize_function, batched=True, batch_size=self.effective_batch_size)
+        tokenized_train = dataset["train"].map(tokenize_function, batched=True, batch_size=self.effective_batch_size)
+        tokenized_test = dataset["test"].map(tokenize_function, batched=True, batch_size=self.batch_size)
+        tokenized_datasets = {"train": tokenized_train, "test": tokenized_test}
         return tokenized_datasets
+
 
     def generate_training_data(self, df, config):
         raise NotImplementedError
