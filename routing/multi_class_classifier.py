@@ -54,8 +54,9 @@ class MultiCriticClassifier(LLM_Classifier):
         distance_from_gold = np.mean(gold_scores - predicted_scores)
         improvement_over_init = np.mean(predicted_scores - init_scores)
         critic_is_needed = np.where(labels != 5)[0]
+        print(critic_is_needed)
         improvement_over_init_when_critic_is_needed = np.mean(predicted_scores[critic_is_needed] - init_scores[critic_is_needed])
-        distance_from_gold_when_critic_is_needed = np.mean(gold_scores[labels != 5] - predicted_scores[labels != 5])
+        distance_from_gold_when_critic_is_needed = np.mean(gold_scores[critic_is_needed] - predicted_scores[critic_is_needed])
 
         return {"accuracy": accuracy, "f1_micro": f1_micro, "f1_macro": f1_macro,
                 "distance_from_gold": distance_from_gold, "improvement_over_init": improvement_over_init,
