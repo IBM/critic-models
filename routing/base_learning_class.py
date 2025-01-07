@@ -124,7 +124,7 @@ class LLM_Classifier:
     def get_training_args(self):
         # Define training arguments
         training_args = TrainingArguments(
-            output_dir="./results",
+            output_dir=f"./results/{self.model_name}_{self.learning_rate}_{self.batch_size}_{self.num_epochs}_{self.weight_decay}_{self.lora_r}_{self.lora_alpha}_{self.lora_dropout}",
             eval_strategy="steps",
             save_strategy="steps",
             save_steps=1000,  # Save every 1000 steps
@@ -151,7 +151,7 @@ class LLM_Classifier:
             model=self.hf_model,
             args=training_args,
             train_dataset=self.dataset["train"],
-            eval_dataset=self.dataset["test"],
+            eval_dataset=self.dataset["test"].sample(100),
             compute_metrics=compute_metrics,
             data_collator=data_collator
         )
@@ -167,9 +167,9 @@ class LLM_Classifier:
     def evaluate_model(self, trainer):
 
         # Evaluate the model
-        predictions, labels, _ = trainer.predict(self.dataset["test"])
+        predictions, labels, _ = trainer.predict(self.dataset["test"].sample(100))
         predictions = predictions.argmax(axis=1)
-        res = self.unique_class_eval(np.array(labels), np.array(predictions))
+        res = self.unique_class_eval(labels, predictions)
 
         # Print model name and hyperparameters
         print(f"Model: {self.model_name}")
