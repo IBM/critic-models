@@ -8,9 +8,10 @@ import random
 import torch
 from peft import LoraConfig, get_peft_model, TaskType
 from sklearn.metrics import f1_score, accuracy_score
-
-SPLIT = 'train'
 from transformers import DataCollatorWithPadding
+
+MAX_LENGTH = 2048
+SPLIT = 'train'
 
 
 def compute_metrics(eval_pred):
@@ -116,7 +117,7 @@ class LLM_Classifier:
         hf_model = self.load_hf_model(model_name)
         self.hf_model = self.load_peft_model(hf_model)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, max_length=MAX_LENGTH)
         self.dataset = self.load_dataset()
 
     def get_training_args(self):
@@ -126,7 +127,7 @@ class LLM_Classifier:
             eval_strategy="steps",
             save_strategy="steps",
             save_steps=1000,  # Save every 1000 steps
-            eval_steps=100,  # Evaluate every 500 steps
+            eval_steps=500,  # Evaluate every 500 steps
             logging_dir="./logs",
             logging_steps=100,  # Log every 100 steps
             learning_rate=self.learning_rate,
@@ -144,7 +145,7 @@ class LLM_Classifier:
     def train_model(self):
         # Initialize the Trainer
         training_args = self.get_training_args()
-        data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer, max_length=2048)
+        data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer, max_length=MAX_LENGTH)
         trainer = Trainer(
             model=self.hf_model,
             args=training_args,
