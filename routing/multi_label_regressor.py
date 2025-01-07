@@ -43,9 +43,6 @@ class MultiLabelRegressor(LLM_Classifier):
         return dataset
 
     def unique_class_eval(self, labels, predictions):
-        print(labels.shape)
-        print(predictions.shape)
         labels = np.argmax(labels, axis=1)
-        predictions = np.argmax(predictions, axis=1)
         test_set = self.dataset["test"]
         return multi_class_eval(labels, predictions, test_set)

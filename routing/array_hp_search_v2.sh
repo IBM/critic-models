@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --array=0-255%10  # Limit to 10 parallel jobs
+#SBATCH --array=0-40%10  # Limit to 10 parallel jobs
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
@@ -24,7 +24,8 @@ lora_rs=(8)
 lora_alphas=(16)
 #lora_dropouts=(0.1 0.2)
 lora_dropouts=(0.1)
-seeds=(42 123)
+#seeds=(42 123)
+seeds=(42)
 
 config="utils/config_for_routing.json"
 df="_output/data_for_critic_routing.csv"
