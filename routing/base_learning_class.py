@@ -151,7 +151,7 @@ class LLM_Classifier:
             args=training_args,
             train_dataset=self.dataset["train"],
             eval_dataset=self.dataset["test"],
-            compute_metrics=self.unique_class_eval,
+            compute_metrics=compute_metrics,
             data_collator=data_collator
         )
 
