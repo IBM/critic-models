@@ -18,6 +18,7 @@ class MulriCriticClassifier(LLM_Classifier):
         sorted_models = sorted(config["generator_models"])
         dataset = []
         all_models_jsons = self.load_all_models_jsons(config, sorted_models)
+        counter = 0
         for i, row in tqdm(df.iterrows(), total=len(df)):
             sample = row["sample_text"]
             generator_model = row["best_init_generation_model"]
@@ -25,7 +26,7 @@ class MulriCriticClassifier(LLM_Classifier):
             try:
                 model_response = self.load_initial_response(all_models_jsons[generator_model], sample)
             except KeyError:
-                print(f"Sample {sample} not found in model {generator_model}")
+                counter += 1
                 continue
             raw_scores = eval(re.sub(r"\s+", ", ", row['scores']))
             dataset.append({"sample_text": sample, "initial_response": model_response,
@@ -34,6 +35,8 @@ class MulriCriticClassifier(LLM_Classifier):
                             "best_revised_scores": np.max(raw_scores[row["best_init_generation_model"]]),
                             "labels": int(row["best_critic"]),
                             })
+        if counter > 0:
+            print(f"skip {counter} samples")
         dataset = Dataset.from_list(dataset)
         return dataset
 
