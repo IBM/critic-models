@@ -4,6 +4,8 @@ from datasets import Dataset
 import numpy as np
 from tqdm import tqdm
 from sklearn.metrics import f1_score, accuracy_score
+import re
+
 
 class MulriCriticClassifier(LLM_Classifier):
     def load_hf_model(self, model_name):
@@ -25,10 +27,11 @@ class MulriCriticClassifier(LLM_Classifier):
             except KeyError:
                 print(f"Sample {sample} not found in model {generator_model}")
                 continue
+            raw_scores = eval(re.sub(r"\s+", ", ", row['scores']))
             dataset.append({"sample_text": sample, "initial_response": model_response,
                             "best_init_generation_model": generator_model,
-                            "revision_scores": row["scores"][row["best_init_generation_model"]],
-                            "best_revised_scores": row["scores"][row["best_init_generation_model"]].max(),
+                            "revision_scores": np.array(raw_scores[row["best_init_generation_model"]]),
+                            "best_revised_scores": np.max(raw_scores[row["best_init_generation_model"]]),
                             "labels": int(row["best_critic"]),
                             })
         dataset = Dataset.from_list(dataset)
@@ -40,8 +43,9 @@ class MulriCriticClassifier(LLM_Classifier):
         f1_macro = f1_score(labels, predictions, average='macro')
         test_set = self.dataset["test"]
         gold_scores = test_set["best_revised_scores"]
-        predicted_scores = test_set["revision_scores"][predictions]
-        init_scores = test_set["revision_scores"][:, -1]
+        revision_scores = np.array(test_set["revision_scores"])
+        predicted_scores = revision_scores[np.arange(len(predictions)), predictions]
+        init_scores = revision_scores[:, -1]
         distance_from_gold = np.mean(gold_scores - predicted_scores)
         improvement_over_init = np.mean(predicted_scores - init_scores)
         improvement_over_init_when_critic_is_needed = np.mean(predicted_scores[labels != 5] - init_scores[labels != 5])
