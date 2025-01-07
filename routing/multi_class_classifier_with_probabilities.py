@@ -45,6 +45,8 @@ class MultiProbableCriticClassifier(LLM_Classifier):
         return dataset
 
     def unique_class_eval(self, labels, predictions):
+        print(labels.shape)
+        print(predictions.shape)
         accuracy = accuracy_score(labels, predictions)
         f1_micro = f1_score(labels, predictions, average='micro')
         f1_macro = f1_score(labels, predictions, average='macro')
