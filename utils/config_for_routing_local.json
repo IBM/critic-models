@@ -1,0 +1,26 @@
+{
+  "generation_init_dir": "/Users/gililior/research/datasets/arena_data_final/generation_pipeline/init_response",
+  "generation_init_path": "{generation_init_dir}/{generator_model}-init-response-{split}.json",
+  "init_dir": "/Users/gililior/research/datasets/arena_data_final/llm_aaj_constraints_evaluation/initial",
+  "revised_dir": "/Users/gililior/research/datasets/arena_data_final/llm_aaj_constraints_evaluation/revised",
+  "evals_prefix": "decomposition-evaluation-llama3.1-70b",
+  "init_path": "{init_dir}/{eval_prefix}.{generator_model}-init-response-{split}.json",
+  "revised_path": "{revised_dir}/{eval_prefix}.init-{generator_model}-{split}.critic-{critic_model}.revise-{generator_model}.json",
+  "embedding_dir": "/Users/gililior/research/datasets/arena_data_final/embeddings",
+  "representations_path": "{embedding_dir}/{split}/NV-Embed-v2-{generator_model}/{representation}.npy",
+  "generator_models": [
+    "llama3-8b",
+    "gemma-2-9b",
+    "phi-3-small-8k",
+    "starling-7b-beta",
+    "granite3-8b"
+  ],
+  "critic_models": [
+    "llama3-8b",
+    "gemma-2-9b",
+    "phi-3-small-8k",
+    "starling-7b-beta",
+    "granite3-8b"
+  ],
+  "path_to_tasks_df": "_output/train_data_model_routing.csv"
+}
