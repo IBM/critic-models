@@ -10,7 +10,7 @@ import torch
 class MultiLabelRegressor(LLM_Classifier):
     def load_hf_model(self, model_name):
         base_model = AutoModelForSequenceClassification.from_pretrained(
-            model_name, num_labels=6, device_map='auto', torch_dtype='bfloat16', problem_type="regression"
+            model_name, num_labels=6, device_map='auto', problem_type="regression"
         )
         return base_model
 
@@ -30,7 +30,6 @@ class MultiLabelRegressor(LLM_Classifier):
                 continue
             raw_scores = eval(re.sub(r"\s+", ", ", row['scores']))
             labels = raw_scores[row["best_init_generation_model"]]
-            labels = torch.tensor(labels, dtype=torch.bfloat16)
             dataset.append({"sample_text": sample, "initial_response": model_response,
                             "best_init_generation_model": generator_model,
                             "revision_scores": np.array(raw_scores[row["best_init_generation_model"]]),
