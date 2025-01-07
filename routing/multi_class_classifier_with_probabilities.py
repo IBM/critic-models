@@ -46,5 +46,4 @@ class MultiProbableCriticClassifier(LLM_Classifier):
     def unique_class_eval(self, labels, predictions):
         labels = np.argmax(labels, axis=1)
         test_set = self.dataset["test"]
-        test_set = test_set.select(range(100))
         return multi_class_eval(labels, predictions, test_set)
