@@ -155,7 +155,6 @@ class LLM_Classifier:
             compute_metrics=compute_metrics,
             data_collator=data_collator
         )
-        self.evaluate_model(trainer)
 
         # Train the model
         trainer.train()
