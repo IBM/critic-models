@@ -156,6 +156,7 @@ class LLM_Classifier:
             compute_metrics=compute_metrics,
             data_collator=data_collator
         )
+        self.evaluate_model(trainer)
 
         # Train the model
         trainer.train()
@@ -169,7 +170,7 @@ class LLM_Classifier:
         # Evaluate the model
         predictions, labels, _ = trainer.predict(self.dataset["test"])
         predictions = predictions.argmax(axis=1)
-        res = self.unique_class_eval(labels, predictions)
+        res = self.unique_class_eval(np.array(labels), np.array(predictions))
 
         # Print model name and hyperparameters
         print(f"Model: {self.model_name}")
