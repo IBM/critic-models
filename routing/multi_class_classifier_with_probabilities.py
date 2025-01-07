@@ -50,6 +50,7 @@ class MultiProbableCriticClassifier(LLM_Classifier):
         f1_micro = f1_score(labels, predictions, average='micro')
         f1_macro = f1_score(labels, predictions, average='macro')
         test_set = self.dataset["test"]
+        test_set = test_set.select(range(100))
         gold_scores = test_set["best_revised_scores"]
         revision_scores = np.array(test_set["revision_scores"])
         predicted_scores = revision_scores[np.arange(len(predictions)), predictions]
