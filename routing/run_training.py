@@ -1,17 +1,20 @@
 from argparse import ArgumentParser
 from routing.self_critic_classifier import SelfCriticClassifier
+from routing.multi_class_classifier import MulriCriticClassifier
 
 
 def get_classifier_class(classifier_name):
     if classifier_name == 'self-critic':
         return SelfCriticClassifier
+    elif classifier_name == 'multi-class':
+        return MulriCriticClassifier
     else:
         raise ValueError(f'Invalid classifier name: {classifier_name}')
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--classifier_name', type=str, options=['self-critic', 'multi-class'], required=True,
+    parser.add_argument('--classifier_name', type=str, choices=['self-critic', 'multi-class'], required=True,
                         help='Name of the classifier to use')
     parser.add_argument('--config', type=str, required=True, help='Path to config file')
     parser.add_argument('--df', type=str, required=True, help='Path to dataframe with labels')

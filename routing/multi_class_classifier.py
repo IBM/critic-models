@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from sklearn.metrics import f1_score, accuracy_score
 
-class SelfCriticClassifier(LLM_Classifier):
+class MulriCriticClassifier(LLM_Classifier):
     def load_hf_model(self, model_name):
         base_model = AutoModelForSequenceClassification.from_pretrained(
             model_name, num_labels=6, device_map='auto', torch_dtype='bfloat16'
