@@ -10,6 +10,7 @@ from peft import LoraConfig, get_peft_model, TaskType
 from sklearn.metrics import f1_score, accuracy_score
 
 SPLIT = 'train'
+from transformers import DataCollatorWithPadding
 
 
 def compute_metrics(eval_pred):
@@ -55,7 +56,7 @@ class LLM_Classifier:
 
         def tokenize_function(examples):
             return self.tokenizer(
-                examples["initial_response"], truncation=True, padding="longest", max_length=2048
+                examples["initial_response"], truncation=True
             )
 
         tokenized_dataset = dataset.map(tokenize_function, batched=True)
@@ -140,12 +141,14 @@ class LLM_Classifier:
     def train_model(self):
         # Initialize the Trainer
         training_args = self.get_training_args()
+        data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
         trainer = Trainer(
             model=self.hf_model,
             args=training_args,
             train_dataset=self.dataset["train"],
             eval_dataset=self.dataset["test"],
-            compute_metrics=compute_metrics
+            compute_metrics=compute_metrics,
+            data_collator=data_collator
         )
 
         # Train the model
