@@ -108,7 +108,6 @@ class LLM_Classifier:
         self.model_name = model_name
         self.learning_rate = learning_rate
         self.batch_size = batch_size
-        # self.effective_batch_size = batch_size*2
         self.num_epochs = num_epochs
         self.weight_decay = weight_decay
         self.lora_r = lora_r
@@ -135,7 +134,7 @@ class LLM_Classifier:
             learning_rate=self.learning_rate,
             per_device_train_batch_size=self.batch_size,
             gradient_accumulation_steps=8 // self.batch_size,
-            per_device_eval_batch_size=8,
+            per_device_eval_batch_size=4,
             num_train_epochs=self.num_epochs,
             weight_decay=self.weight_decay,
             load_best_model_at_end=True,
