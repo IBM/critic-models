@@ -55,7 +55,7 @@ class LLM_Classifier:
 
         def tokenize_function(examples):
             return self.tokenizer(
-                examples["initial_response"], truncation=True, padding="max_length", max_length=2048
+                examples["initial_response"], truncation=True, padding="longest", max_length=2048
             )
 
         tokenized_datasets = dataset.map(tokenize_function, batched=True)
@@ -125,7 +125,7 @@ class LLM_Classifier:
             logging_steps=100,  # Log every 100 steps
             learning_rate=self.learning_rate,
             per_device_train_batch_size=self.batch_size,
-            gradient_accumulation_steps=8 // self.batch_size,
+            # gradient_accumulation_steps=8 // self.batch_size,
             per_device_eval_batch_size=self.batch_size,
             num_train_epochs=self.num_epochs,
             weight_decay=self.weight_decay,
