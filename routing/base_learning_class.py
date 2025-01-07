@@ -58,7 +58,7 @@ class LLM_Classifier:
                 examples["initial_response"], truncation=True, padding="longest", max_length=2048
             )
 
-        tokenized_datasets = dataset.map(tokenize_function, batched=True, batch_size=self.batch_size)
+        tokenized_datasets = dataset.map(tokenize_function, batched=True, batch_size=8)
         return tokenized_datasets
 
     def generate_training_data(self, df, config):
