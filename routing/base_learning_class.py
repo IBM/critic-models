@@ -17,7 +17,10 @@ def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
     accuracy = accuracy_score(labels, predictions)
-    f1 = f1_score(labels, predictions, average='binary')
+    if np.max(labels) > 1:
+        f1 = f1_score(labels, predictions, average='micro')
+    else:
+        f1 = f1_score(labels, predictions, average='binary')
     print(f"Evaluation - Accuracy: {accuracy:.4f}, F1: {f1:.4f}")
     return {"accuracy": accuracy, "f1": f1}
 
@@ -129,7 +132,7 @@ class LLM_Classifier:
             learning_rate=self.learning_rate,
             per_device_train_batch_size=self.batch_size,
             gradient_accumulation_steps=8 // self.batch_size,
-            per_device_eval_batch_size=self.batch_size,
+            per_device_eval_batch_size=8,
             num_train_epochs=self.num_epochs,
             weight_decay=self.weight_decay,
             load_best_model_at_end=True,
@@ -147,7 +150,7 @@ class LLM_Classifier:
             args=training_args,
             train_dataset=self.dataset["train"],
             eval_dataset=self.dataset["test"],
-            compute_metrics=compute_metrics,
+            compute_metrics=self.unique_class_eval,
             data_collator=data_collator
         )
 
