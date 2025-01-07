@@ -12,7 +12,7 @@
 
 # Define hyperparameter grid
 class_names=('self-critic' 'multi-class' 'prob-multi-class' 'regressor')
-learning_rates=(1e-6, 3e-6, 1e-5, 3e-5, 1e-4)
+learning_rates=(1e-6 3e-6 1e-5 3e-5 1e-4)
 #batch_sizes=(2 3)
 batch_sizes=(2)
 #num_epochs=(3 5)
