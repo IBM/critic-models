@@ -4,13 +4,15 @@ from datasets import Dataset
 import numpy as np
 from tqdm import tqdm
 import re
+import torch
 
 
 class MultiLabelRegressor(LLM_Classifier):
     def load_hf_model(self, model_name):
         base_model = AutoModelForSequenceClassification.from_pretrained(
-            model_name, num_labels=6, device_map='auto', torch_dtype='bfloat16', problem_type="regression"
+            model_name, num_labels=6, device_map='auto', problem_type="regression"
         )
+        base_model = base_model.to(torch.bfloat16)
         return base_model
 
     def generate_training_data(self, df, config):
