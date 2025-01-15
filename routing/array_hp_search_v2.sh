@@ -29,7 +29,7 @@ seeds=(42)
 
 config="utils/config_for_routing.json"
 df="_output/data_for_critic_routing.csv"
-model_name="mistralai/Mistral-7B-Instruct-v0.3"
+model_name="mistralai/Ministral-8B-Instruct-2410"
 results_file="_output/binary_classification_results_v2.csv"
 
 # Calculate total number of combinations
