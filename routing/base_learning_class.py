@@ -119,6 +119,7 @@ class LLM_Classifier:
         self.hf_model = self.load_peft_model(hf_model)
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, max_length=MAX_LENGTH)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
         self.dataset = self.load_dataset()
 
     def get_training_args(self):
