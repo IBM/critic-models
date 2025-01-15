@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --array=0-40%10  # Limit to 10 parallel jobs
-#SBATCH --mem=40gb
+#SBATCH --mem=80gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
 #SBATCH --gres=gpu:1,vmem:40g
