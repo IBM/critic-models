@@ -29,7 +29,7 @@ seeds=(42)
 
 config="utils/config_for_routing.json"
 df="_output/data_for_critic_routing.csv"
-model_name="google/gemma-2-2b-it"
+model_name="mistralai/Ministral-8B-Instruct-2410"
 results_file="_output/binary_classification_results_v2.csv"
 
 # Calculate total number of combinations
