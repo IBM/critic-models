@@ -42,32 +42,33 @@ class InferenceBase:
         raise NotImplementedError
 
     def predict(self, out_path):
-        print("processing prompts...")
         to_predict, ordered_prompts = self.get_data_for_inference()
+        pred_with_outputs = self.get_predictions(to_predict, ordered_prompts)
+        self.dump_output(ordered_prompts, out_path, pred_with_outputs)
 
-        if 'lora' in self.model_name:
-            lora_request = LoRARequest("lora", 1, lora_path=self.model_name)
-        else:
-            lora_request = None
-
-        print("generating responses...")
-        outputs = self.inference_model.chat(messages=to_predict, sampling_params=self.sampling_params, use_tqdm=True,
-                                            lora_request=lora_request)
-
-        for i, prompt in enumerate(ordered_prompts):
-            response = outputs[i].outputs[0].text
-            to_predict[i].append({"role": "assistant", "content": response})
-
+    def dump_output(self, ordered_prompts, out_path, to_predict):
         out_dict = self.get_out_dict_format()
         predictions_key = self.get_key_in_out_dict()
         out_dict["predictions_key"] = predictions_key
         out_dict[predictions_key] = {}
-
         for i, prompt in enumerate(ordered_prompts):
             out_dict[predictions_key][prompt] = to_predict[i]
-
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         with open(out_path, 'wt') as f:
             str_json = json.dumps(out_dict, indent=2)
             f.write(str_json)
         print(f"saved predictions to {out_path}")
+
+    def get_predictions(self, to_predict, ordered_prompts):
+        print("processing prompts...")
+        if 'lora' in self.model_name:
+            lora_request = LoRARequest("lora", 1, lora_path=self.model_name)
+        else:
+            lora_request = None
+        print("generating responses...")
+        outputs = self.inference_model.chat(messages=to_predict, sampling_params=self.sampling_params, use_tqdm=True,
+                                            lora_request=lora_request)
+        for i, prompt in enumerate(ordered_prompts):
+            response = outputs[i].outputs[0].text
+            to_predict[i].append({"role": "assistant", "content": response})
+        return to_predict
