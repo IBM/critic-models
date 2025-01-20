@@ -68,5 +68,5 @@ if __name__ == '__main__':
                         help="out path to save the critic responses")
 
     args = parser.parse_args()
-    infer_critics_model = CriticGen(args.critic_model, args.base_model_for_lora, args.responses, args.critic_prompt)
+    infer_critics_model = CriticAndRefineGen(args.critic_model, args.base_model_for_lora, args.responses, args.critic_prompt)
     infer_critics_model.predict(args.out_path)
