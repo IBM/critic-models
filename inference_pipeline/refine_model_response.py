@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 
 PROMPT = """
-Your task is to generate text based on the provided task description. Additionally, you are given an example output from another model (the \"reference\"). Use the reference to identify elements that are well-executed and should be retained or adapted in your response, while also improving upon areas where it falls short or does not align with the task description. Focus on producing a result that best meets the requirements of the task and outperforms the reference. Do not provide any additional information.\n\nTask description={instruction}\n\nReference={ai_response}\n\nAnswer:
+Your task is to generate text based on the provided task description. Additionally, you are given an example output from another model (the \"reference\"). Use the reference to identify elements that are well-executed and should be retained or adapted in your response, while also improving upon areas where it falls short or does not align with the task description. Focus on producing a result that best meets the requirements of the task and outperforms the reference. Do not provide any additional explanation, include only your answer to the task description.\n\nTask description: {instruction}\n\nReference: \"{ai_response}\"\n\nAnswer:
 """
 
 class RefineGen(InferenceBase):
@@ -22,8 +22,6 @@ class RefineGen(InferenceBase):
         to_predict = []
         ordered_prompts = []
         for prompt in tqdm(self.data):
-            if len(to_predict) > 10:
-                break
             for msg in self.data[prompt]:
                 if msg['role'] == 'assistant':
                     ai_response = msg['content']
