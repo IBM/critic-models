@@ -50,14 +50,14 @@ if __name__ == '__main__':
     parser.add_argument("--responses", type=str, required=True,
                         help="Path to a json file with responses")
     parser.add_argument("--refine_prompt", type=str, required=True,
-                        help="the prompt used for critic")
+                        help="the prompt used for revision")
     parser.add_argument("--refine_model", type=str, required=True,
-                        help="the model to perform the critic with")
+                        help="the model to perform the revision with")
     parser.add_argument("--base_model_for_lora", default=None,
                         help="if inference with lora trained model, provide the base model it was trained from")
     parser.add_argument("--out_path", type=str, required=True,
-                        help="out path to save the critic responses")
+                        help="out path to save the revision responses")
 
     args = parser.parse_args()
-    infer_critics_model = RefineGen(args.refine_model, args.base_model_for_lora, args.responses, args.refine_prompt)
-    infer_critics_model.predict(args.out_path)
+    infer_refine_model = RefineGen(args.refine_model, args.base_model_for_lora, args.responses, args.refine_prompt)
+    infer_refine_model.predict(args.out_path)
