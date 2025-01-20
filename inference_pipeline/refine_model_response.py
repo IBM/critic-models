@@ -22,6 +22,8 @@ class RefineGen(InferenceBase):
         to_predict = []
         ordered_prompts = []
         for prompt in tqdm(self.data):
+            if len(to_predict) > 10:
+                break
             for msg in self.data[prompt]:
                 if msg['role'] == 'assistant':
                     ai_response = msg['content']
