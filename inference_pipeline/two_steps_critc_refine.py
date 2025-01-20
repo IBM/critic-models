@@ -5,6 +5,11 @@ import json
 from tqdm import tqdm
 import os
 
+CRITIC_PROMPT = """
+Your task is to carefully review the provided reference output based on the task description. Highlight its strengths, identify areas for improvement, and suggest ways to refine or enhance it. Your feedback should help ensure that future responses better align with the task requirements.\n\nTask description: {instruction}\n\nReference: {ai_response}
+"""
+
+
 class CriticAndRefineGen(InferenceBase):
     INITIAL_RESPONSES_PATH_KEY = "refined_responses"
 
@@ -36,7 +41,7 @@ class CriticAndRefineGen(InferenceBase):
 
     def get_data_for_refinement(self, to_predict, ordered_prompts):
         for i in range(len(to_predict)):
-            to_predict[i].append({"role": "user", "content": "Using the task description and the feedback you provided, craft a new response that aligns with the task requirements. Be aware of the strengths and the pitfalls of the reference output, while you generate the best final output possible that fulfills the task requirements:\n\"{TASK}\".\n\nAnswer:".format(TASK=ordered_prompts[i])})
+            to_predict[i].append({"role": "user", "content": "Using the task description and the feedback you provided, craft a new response that aligns with the task requirements. Be aware of the strengths and the pitfalls of the reference output, while you generate the best final output possible that fulfills the task requirements. Do not provide any additional information.\n\nTask description:\"{TASK}\". \n\nAnswer:".format(TASK=ordered_prompts[i])})
         return to_predict
     def predict(self, out_path):
         to_predict, ordered_prompts = self.get_data_for_inference()
