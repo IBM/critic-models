@@ -62,7 +62,7 @@ class LLM_Classifier:
 
         def tokenize_function(examples):
             return self.tokenizer(
-                examples["initial_response"], truncation=True, max_length=MAX_LENGTH
+                examples["initial_response"], truncation=True, max_length=MAX_LENGTH, padding=False
             )
 
         tokenized_dataset = dataset.map(tokenize_function, batched=True)
