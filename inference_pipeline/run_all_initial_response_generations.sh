@@ -32,7 +32,7 @@ for model in "${model_names[@]}"; do
   out_path="${out_dir}/${model_name_no_family}-${split}-init-gen.json"
   if [ $index -eq $task_id ]; then
     echo "Running combination: MODEL=$model"
-    ./inference_pipline/run_single_initial_generation.sh $dataset $split $tasks_key $model $out_path
+    ./inference_pipeline/run_single_initial_generation.sh $dataset $split $tasks_key $model $out_path
     exit 0
   fi
   index=$((index + 1))
