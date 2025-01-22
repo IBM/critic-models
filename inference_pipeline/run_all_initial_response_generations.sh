@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --array=0-8  # Limit to 10 parallel jobs
+#SBATCH --array=0-8
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
-#SBATCH --gres=gpu:1,vmem:40g
+#SBATCH --gres=gpu:1,vmem:24g
 #SBATCH --error=slurm_logs/slurm_%A_%a.err
 #SBATCH --output=slurm_logs/slurm_%A_%a.out
-#SBATCH --job-name=hyperparam_search
+#SBATCH --job-name=initial_generations
 #SBATCH --mail-user=gili.lior@mail.huji.ac.il
 #SBATCH --mail-type=ALL
 
