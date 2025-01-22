@@ -12,7 +12,7 @@
 
 model_names=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instruct" "meta-llama/Llama-3.1-8B-Instruct" "meta-llama/Llama-3.1-70B-Instruct" "google/gemma-2-2b-it" "google/gemma-2-9b-it" "google/gemma-2-27b-it" "microsoft/Phi-3.5-mini-instruct" "microsoft/Phi-3.5-MoE-instruct")
 
-dataset="utils/config_for_routing.json"
+dataset="/cs/snapless/gabis/gililior/arena_data_final/constrained-lmsys-chat-1m"
 split="train"
 tasks_key="task"
 out_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
