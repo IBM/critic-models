@@ -32,9 +32,6 @@ index=0
 
 for ((i=0; i<${#llama_models[@]}; i++)); do
   for ((j=0; j<${#llama_models[@]}; j++)); do
-    if [ $i -eq $j ]; then
-      continue
-    fi
     generator="${llama_models[i]}"
     revision_model="${llama_models[j]}"
     generator_no_family=$(echo $generator | sed 's/.*\///')
@@ -42,9 +39,11 @@ for ((i=0; i<${#llama_models[@]}; i++)); do
     path_to_init_response_generator="${init_response_dir}/${generator_no_family}-${split}-init-gen.json"
     out_path="${out_dir}/${revision_no_family}-revise-one-step-${generator_no_family}-${split}.json"
     if [ $index -eq $task_id ]; then
-      echo "Running combination: generator=$generator, revision_model=$revision_model"
-      ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $generator $out_path
-      exit 0
+      if [ ! -f $out_path ]; then
+        echo "Running combination: generator=$generator, revision_model=$revision_model"
+        ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $generator $out_path
+        exit 0
+      fi
     fi
     index=$((index + 1))
   done
@@ -60,9 +59,11 @@ for ((i=0; i<${#gemma_models[@]}; i++)); do
     path_to_init_response_generator="${init_response_dir}/${generator_no_family}-${split}-init-gen.json"
     out_path="${out_dir}/${revision_no_family}-revise-one-step-${generator_no_family}-${split}.json"
     if [ $index -eq $task_id ]; then
-      echo "Running combination: generator=$generator, revision_model=$revision_model"
-      ./inference_pipeline/run_single_revision_one_step.sh $split $path_to_init_response_generator $generator $out_path
-      exit 0
+      if [ ! -f $out_path ]; then
+        echo "Running combination: generator=$generator, revision_model=$revision_model"
+        ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $generator $out_path
+        exit 0
+      fi
     fi
     index=$((index + 1))
   done
