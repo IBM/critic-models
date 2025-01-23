@@ -13,7 +13,6 @@
 llama_models=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instruct" "meta-llama/Llama-3.1-8B-Instruct")
 gemma_models=("google/gemma-2-2b-it" "google/gemma-2-27b-it")
 
-dataset="/cs/snapless/gabis/gililior/arena_data_final/constrained-lmsys-chat-1m"
 split="train"
 tasks_key="task"
 out_dir="/cs/snapless/gabis/gililior/arena_data_v2/revisions"
@@ -44,7 +43,7 @@ for ((i=0; i<${#llama_models[@]}; i++)); do
     out_path="${out_dir}/${revision_no_family}-revise-one-step-${generator_no_family}-${split}.json"
     if [ $index -eq $task_id ]; then
       echo "Running combination: generator=$generator, revision_model=$revision_model"
-      ./inference_pipeline/run_single_revision_one_step.sh $split $path_to_init_response_generator $generator $out_path
+      ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $generator $out_path
       exit 0
     fi
     index=$((index + 1))
