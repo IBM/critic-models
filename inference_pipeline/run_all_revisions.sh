@@ -38,8 +38,8 @@ for ((i=0; i<${#llama_models[@]}; i++)); do
     fi
     generator="${llama_models[i]}"
     revision_model="${llama_models[j]}"
-    generator_no_family=$(echo generator | sed 's/.*\///')
-    revision_no_family=$(echo revision_model | sed 's/.*\///')
+    generator_no_family=$(echo $generator | sed 's/.*\///')
+    revision_no_family=$(echo $revision_model | sed 's/.*\///')
     path_to_init_response_generator="${init_response_dir}/${generator_no_family}-${split}-init-gen.json"
     out_path="${out_dir}/${revision_no_family}-revise-one-step-${generator_no_family}-${split}.json"
     if [ $index -eq $task_id ]; then
@@ -59,8 +59,8 @@ for ((i=0; i<${#gemma_models[@]}; i++)); do
     fi
     generator="${gemma_models[i]}"
     revision_model="${gemma_models[j]}"
-    generator_no_family=$(echo generator | sed 's/.*\///')
-    revision_no_family=$(echo revision_model | sed 's/.*\///')
+    generator_no_family=$(echo $generator | sed 's/.*\///')
+    revision_no_family=$(echo $revision_model | sed 's/.*\///')
     path_to_init_response_generator="${init_response_dir}/${generator_no_family}-${split}-init-gen.json"
     out_path="${out_dir}/${revision_no_family}-revise-one-step-${generator_no_family}-${split}.json"
     if [ $index -eq $task_id ]; then
