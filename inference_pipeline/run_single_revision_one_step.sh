@@ -23,7 +23,7 @@ export PYTHONPATH=./
 source /cs/snapless/gabis/gililior/virtual_envs/critic-routing/bin/activate
 
 # Run the Python script with the provided arguments
-python inference_pipeline/generate_initial_response.py \
+python inference_pipeline/refine_model_response.py \
   --split $SPLIT \
   --responses $INIT_RESPONSES \
   --refine_model $MODEL \
