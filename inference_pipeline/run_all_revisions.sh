@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --array=0-3
+#SBATCH --array=0-8
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
@@ -11,7 +11,7 @@
 #SBATCH --mail-type=ALL
 
 llama_models=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instruct" "meta-llama/Llama-3.1-8B-Instruct")
-gemma_models=("google/gemma-2-2b-it" "google/gemma-2-27b-it")
+gemma_models=("google/gemma-2-2b-it" "google/gemma-2-9b-it" "google/gemma-2-27b-it")
 
 split="train"
 tasks_key="task"
