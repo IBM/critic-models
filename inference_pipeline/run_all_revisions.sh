@@ -53,9 +53,6 @@ done
 
 for ((i=0; i<${#gemma_models[@]}; i++)); do
   for ((j=0; j<${#gemma_models[@]}; j++)); do
-    if [ $i -eq $j ]; then
-      continue
-    fi
     generator="${gemma_models[i]}"
     revision_model="${gemma_models[j]}"
     generator_no_family=$(echo $generator | sed 's/.*\///')
