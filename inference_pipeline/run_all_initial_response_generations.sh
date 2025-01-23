@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --array=0-5
+#SBATCH --array=0-3
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
-#SBATCH --gres=gpu:1,vmem:40g
+#SBATCH --gres=gpu:2,vmem:40g
 #SBATCH --error=slurm_logs/slurm_%A_%a.err
 #SBATCH --output=slurm_logs/slurm_%A_%a.out
 #SBATCH --job-name=initial_generations
 #SBATCH --mail-user=gili.lior@mail.huji.ac.il
 #SBATCH --mail-type=ALL
 
-model_names=("meta-llama/Llama-3.1-8B-Instruct" "meta-llama/Llama-3.1-70B-Instruct" "google/gemma-2-9b-it" "google/gemma-2-27b-it" "microsoft/Phi-3.5-mini-instruct" "microsoft/Phi-3.5-MoE-instruct")
+model_names=("meta-llama/Llama-3.1-70B-Instruct" "google/gemma-2-27b-it" "microsoft/Phi-3.5-mini-instruct" "microsoft/Phi-3.5-MoE-instruct")
 
 dataset="/cs/snapless/gabis/gililior/arena_data_final/constrained-lmsys-chat-1m"
 split="train"
