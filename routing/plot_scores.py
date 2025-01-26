@@ -1,28 +1,26 @@
+import os.path
 import numpy as np
 import json
+from itertools import product
 
-small_model_0_shot_path = "/Users/gililior/research/datasets/arena_data_pivot_jan25/decomposition-evaluation-llama3.1-70b.arena_inference_gemma_2b_train.json"
-big_model_0_shot_path = "/Users/gililior/research/datasets/arena_data_final/llm_aaj_constraints_evaluation/initial/decomposition-evaluation-llama3.1-70b.llama3-8b-init-response-train.json"
-big_model_refine_small_one_step_path = "/Users/gililior/research/datasets/arena_data_pivot_jan25/decomposition-evaluation-llama3.1-70b.llama3_8b_refine_gemma_2b_one_step_full.json"
-big_model_refine_small_two_steps_path = "/Users/gililior/research/datasets/arena_data_pivot_jan25/decomposition-evaluation-llama3.1-70b.llama3_8b_refine_gemma_2b_two_steps_full.json"
-big_model_self_critic_path = "/Users/gililior/research/datasets/arena_data_final/llm_aaj_constraints_evaluation/revised/decomposition-evaluation-llama3.1-70b.init-llama3-8b-train.critic-llama3-8b.revise-llama3-8b.json"
-all_paths = {
-    "small_model_0_shot": small_model_0_shot_path,
-    "big_model_0_shot": big_model_0_shot_path,
-    "big_model_refine_small_one_step": big_model_refine_small_one_step_path,
-    "big_model_refine_small_two_steps": big_model_refine_small_two_steps_path,
-    "big_model_self_critic": big_model_self_critic_path
-}
+DUMP = "train"
+
+SCORES_DIR = "/Users/gililior/research/datasets/arena_data_v2/llm_aaj/{step}"
+SCORES_PREFIX = "decomposition-evaluation-llama3.1-70b."
+PATH = os.path.join(SCORES_DIR, SCORES_PREFIX)
 
 
-
-def calculate():
+def calculate(init_paths, revise_paths):
     all_jsons = {}
     all_tasks = set()
-    for k in all_paths:
-        with open(all_paths[k], 'r') as f:
-            all_jsons[k] = json.load(f)
-            all_tasks.update(all_jsons[k].keys())
+    for k in init_paths:
+        with open(init_paths[k], 'r') as f:
+            all_jsons[f"0-shot-{k}"] = json.load(f)
+            all_tasks.update(all_jsons[f"0-shot-{k}"].keys())
+
+    for (gen_model, revise_model) in revise_paths:
+        with open(revise_paths[(gen_model, revise_model)], 'r') as f:
+            all_jsons[f"{revise_model}-revise-{revise_model}"] = json.load(f)
 
     all_scores = {k: [] for k in all_jsons}
     for task in all_tasks:
@@ -34,8 +32,20 @@ def calculate():
             mean_score = np.mean(scores)
             all_scores[k].append(mean_score)
 
-    for k in all_scores:
-        print(f"{k}: {np.mean(all_scores[k])}")
+    mean_scores = {k: np.mean(all_scores[k]).round(3) for k in all_scores}
+    for k in sorted(mean_scores, key=mean_scores.get):
+        print(f"{k}: {mean_scores[k]}")
+
 
 if __name__ == '__main__':
-    calculate()
+    llama_models = ["Llama-3.1-8B-Instruct", "Llama-3.2-1B-Instruct", "Llama-3.2-3B-Instruct"]
+    gemma_models = ["gemma-2-2b-it", "gemma-2-9b-it"]
+
+    for name, models in zip(["Llama", "Gemma"], [llama_models, gemma_models]):
+        print(name)
+        init = {model.replace("-Instruct", ""): PATH.format(step="initial") + model + f"-{DUMP}-init-gen.json"
+                for model in models}
+        revise = {(m1.replace("-Instruct", ""), m2.replace("-Instruct", "")): PATH.format(
+            step="revised") + f"{m2}-revise-one-step-{m1}-{DUMP}.json" for (m1, m2) in product(models, models)}
+        calculate(init, revise)
+
