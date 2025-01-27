@@ -1,21 +1,24 @@
 #!/bin/bash
-#SBATCH --array=0-3
+#SBATCH --array=0-4
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
-#SBATCH --gres=gpu:1,vmem:40g
+#SBATCH --gres=gpu:1,vmem:24g
 #SBATCH --error=slurm_logs/slurm_%A_%a.err
 #SBATCH --output=slurm_logs/slurm_%A_%a.out
 #SBATCH --job-name=initial_generations
 #SBATCH --mail-user=gili.lior@mail.huji.ac.il
 #SBATCH --mail-type=ALL
 
-model_names=("meta-llama/Llama-3.1-70B-Instruct" "google/gemma-2-27b-it" "microsoft/Phi-3.5-mini-instruct" "microsoft/Phi-3.5-MoE-instruct")
+model_names=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instruct" "meta-llama/Llama-3.1-8B-Instruct" "google/gemma-2-2b-it" "google/gemma-2-9b-it")
 
-dataset="/cs/snapless/gabis/gililior/arena_data_final/constrained-lmsys-chat-1m"
+#dataset="/cs/snapless/gabis/gililior/arena_data_final/constrained-lmsys-chat-1m"
+#tasks_key="task"
+#out_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
+dataset="google/IFEval"
+tasks_key="prompt"
+out_dir="/cs/snapless/gabis/gililior/if-eval-generations/"
 split="train"
-tasks_key="task"
-out_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
 mkdir -p $out_dir
 mkdir -p slurm_logs
 
