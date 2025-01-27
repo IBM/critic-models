@@ -17,7 +17,7 @@ model_names=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instruc
 #out_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
 dataset="google/IFEval"
 tasks_key="prompt"
-out_dir="/cs/snapless/gabis/gililior/if-eval-generations/"
+out_dir="/cs/snapless/gabis/gililior/if-eval-generations/initial"
 split="train"
 mkdir -p $out_dir
 mkdir -p slurm_logs
