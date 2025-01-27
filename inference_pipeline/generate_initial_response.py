@@ -5,7 +5,8 @@ from datasets import load_dataset, load_from_disk
 
 
 class InitialResponse(InferenceBase):
-    FORMAT_ANSWER = "Provide your answer in the following format: [START] <answer> [END]"
+    # FORMAT_ANSWER = "Provide your answer in the following format: [START] <answer> [END]"
+    FORMAT_ANSWER = ""
 
     def __init__(self, model, base_model_for_lora, data_path, split, tasks_key):
         self.split = split
