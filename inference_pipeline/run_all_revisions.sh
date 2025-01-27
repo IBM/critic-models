@@ -3,7 +3,7 @@
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
-#SBATCH --gres=gpu:1,vmem:40g
+#SBATCH --gres=gpu:1,vmem:24g
 #SBATCH --error=slurm_logs/slurm_%A_%a.err
 #SBATCH --output=slurm_logs/slurm_%A_%a.out
 #SBATCH --job-name=revisions
@@ -15,8 +15,10 @@ gemma_models=("google/gemma-2-2b-it" "google/gemma-2-9b-it")
 
 split="train"
 tasks_key="task"
-out_dir="/cs/snapless/gabis/gililior/arena_data_v2/revisions"
-init_response_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
+#out_dir="/cs/snapless/gabis/gililior/arena_data_v2/revisions"
+#init_response_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
+init_response_dir="/cs/snapless/gabis/gililior/if-eval-generations/initial"
+out_dir="/cs/snapless/gabis/gililior/if-eval-generations/revisions"
 mkdir -p $out_dir
 mkdir -p slurm_logs
 
