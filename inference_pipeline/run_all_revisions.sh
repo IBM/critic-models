@@ -14,7 +14,6 @@ llama_models=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instru
 gemma_models=("google/gemma-2-2b-it" "google/gemma-2-9b-it")
 
 split="train"
-tasks_key="task"
 #out_dir="/cs/snapless/gabis/gililior/arena_data_v2/revisions"
 #init_response_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
 init_response_dir="/cs/snapless/gabis/gililior/if-eval-generations/initial"
