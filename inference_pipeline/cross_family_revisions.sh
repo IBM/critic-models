@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --array=0-3
+#SBATCH --array=0-4
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
@@ -19,7 +19,7 @@ init_response_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations
 mkdir -p $out_dir
 mkdir -p slurm_logs
 
-pairs=(("meta-llama/Llama-3.2-1B-Instruct" "google/gemma-2-2b-it") ("meta-llama/Llama-3.2-1B-Instruct" "google/gemma-2-9b-it") ("google/gemma-2-2b-it" "meta-llama/Llama-3.1-8B-Instruct") ("meta-llama/Llama-3.2-3B-Instruct" "google/gemma-2-9b-it"))
+pairs=("meta-llama/Llama-3.2-1B-Instruct,google/gemma-2-2b-it" "meta-llama/Llama-3.2-3B-Instruct,google/gemma-2-9b-it" "google/gemma-2-2b-it,meta-llama/Llama-3.1-8B-Instruct" "meta-llama/Llama-3.1-8B-Instruct,google/gemma-2-9b-it" "google/gemma-2-9b-it,meta-llama/Llama-3.1-8B-Instruct")
 
 # Calculate total number of combinations
 total_combinations=${#pairs[@]}
@@ -30,8 +30,9 @@ task_id=${SLURM_ARRAY_TASK_ID}
 index=0
 
 for pair in "${pairs[@]}"; do
-  generator="${pair[0]}"
-  revision_model="${pair[1]}"
+  IFS=',' read -r generator revision_model <<< "$pair"
+  echo $generator
+  echo $revision_model
   generator_no_family=$(echo $generator | sed 's/.*\///')
   revision_no_family=$(echo $revision_model | sed 's/.*\///')
   path_to_init_response_generator="${init_response_dir}/${generator_no_family}-${split}-init-gen.json"
