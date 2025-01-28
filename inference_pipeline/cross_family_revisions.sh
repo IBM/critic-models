@@ -37,9 +37,12 @@ for pair in "${pairs[@]}"; do
   revision_no_family=$(echo $revision_model | sed 's/.*\///')
   path_to_init_response_generator="${init_response_dir}/${generator_no_family}-${split}-init-gen.json"
   out_path="${out_dir}/${revision_no_family}-revise-one-step-${generator_no_family}-${split}.json"
-  if [ ! -f $out_path ]; then
-    echo "Running combination: generator=$generator, revision_model=$revision_model"
-    ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $revision_model $out_path
+  if [ $index -eq $task_id ]; then
+    if [ ! -f $out_path ]; then
+      echo "Running combination: generator=$generator, revision_model=$revision_model"
+      ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $revision_model $out_path
+    fi
   fi
+  index=$((index + 1))
 done
 
