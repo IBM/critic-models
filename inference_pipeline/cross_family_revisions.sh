@@ -12,7 +12,7 @@
 
 
 split="train"
-out_dir="/cs/snapless/gabis/gililior/arena_data_v2/revisions"
+out_dir="/cs/snapless/gabis/gililior/arena_data_v2/cross_families"
 init_response_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
 #init_response_dir="/cs/snapless/gabis/gililior/if-eval-generations/initial"
 #out_dir="/cs/snapless/gabis/gililior/if-eval-generations/revisions"
@@ -41,6 +41,7 @@ for pair in "${pairs[@]}"; do
     if [ ! -f $out_path ]; then
       echo "Running combination: generator=$generator, revision_model=$revision_model"
       ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $revision_model $out_path
+      exit 0
     fi
   fi
   index=$((index + 1))
