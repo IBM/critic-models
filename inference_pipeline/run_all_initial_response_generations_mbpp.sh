@@ -17,7 +17,7 @@ model_names=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instruc
 dataset="google-research-datasets/mbpp"
 tasks_key="text"
 out_dir="/cs/snapless/gabis/gililior/mbpp_generations/initial"
-split="train"
+split="test"
 mkdir -p $out_dir
 mkdir -p slurm_logs
 
