@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --array=0-2
+#SBATCH --array=0-3
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
