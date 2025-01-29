@@ -15,12 +15,12 @@
 model_names=("Qwen/Qwen2.5-0.5B-Instruct" "Qwen/Qwen2.5-1.5B-Instruct" "Qwen/Qwen2.5-3B-Instruct")  # "Qwen/Qwen2.5-7B-Instruct")
 
 
-#dataset="/cs/snapless/gabis/gililior/arena_data_final/constrained-lmsys-chat-1m"
-#tasks_key="task"
-#out_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
-dataset="google/IFEval"
-tasks_key="prompt"
-out_dir="/cs/snapless/gabis/gililior/if-eval-generations/initial"
+dataset="/cs/snapless/gabis/gililior/arena_data_final/constrained-lmsys-chat-1m"
+tasks_key="task"
+out_dir="/cs/snapless/gabis/gililior/arena_data_v2/initial_generations"
+#dataset="google/IFEval"
+#tasks_key="prompt"
+#out_dir="/cs/snapless/gabis/gililior/if-eval-generations/initial"
 split="train"
 mkdir -p $out_dir
 mkdir -p slurm_logs
