@@ -1,17 +1,13 @@
 import os
 from argparse import ArgumentParser
 from prepare_data.classify_constrained_generation_tasks import ConstrainedGenerationClassificationRITS
-from prepare_data.decompose_tasks import ArenaClassifiedData
-from utils.eval_consts import PROMPT_EVAL
-import random
 import json
 from multiprocessing import Pool, cpu_count
 from openai import OpenAI
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 from tqdm import tqdm
-from generate_initial_response import InitialResponse
 from prepare_data.classify_constrained_generation_tasks import BaseDataset
-from datasets import load_dataset
+from datasets import load_from_disk
 
 
 class OrigData(BaseDataset):
@@ -25,7 +21,7 @@ class OrigData(BaseDataset):
         return self.name_or_path
 
     def load_data(self, name_or_path):
-        data = load_dataset(self.data, split=self.split)
+        data = load_from_disk(os.path.join(name_or_path, self.split))
         return data
 
     def get_tasks_list(self):
@@ -53,27 +49,25 @@ class InitGenerationsRITS(ConstrainedGenerationClassificationRITS):
             f.write(str_feedback_dict)
 
 
-def generate_parallel(obj):
-    all_tasks = set(obj.data.get_tasks_list())
+def generate_parallel(obj, tasks):
     model_name = obj.model_name
-    api_key=obj.get_api_key()
-    base_url=obj.get_api_endpoint().format(obj.model_name_for_endpoint)
+    api_key = obj.get_api_key()
+    base_url = obj.get_api_endpoint().format(obj.model_name_for_endpoint)
     all_results = {}
     all_args = {}
-    pool= Pool(cpu_count())
-    total=0
-    for task in all_tasks:
+    pool = Pool(cpu_count())
+    total = 0
+    for task in tasks:
         all_args[task] = (task, api_key, base_url, model_name)
-        total+=1
+        total += 1
     pbar = tqdm(total=total)
     for task in all_args:
         arguments = all_args[task]
-        all_results[task] = pool.apply_async(infer_local, arguments, callback=lambda _:pbar.update(1))
+        all_results[task] = pool.apply_async(infer_local, arguments, callback=lambda _: pbar.update(1))
     pool.close()
     pool.join()
     print("DONE")
-
-    return all_results
+    return {task: task_result.get() for task, task_result in all_results.items()}
 
 
 def infer_local(task, api_key, base_url, model_name):
@@ -82,7 +76,6 @@ def infer_local(task, api_key, base_url, model_name):
 
     gen_params = {
         GenParams.MAX_NEW_TOKENS: 1000,
-        "return_options": {"input_tokens": True, "generated_tokens": True},
         'temperature': 0,
         'extra_headers':  {"RITS_API_KEY": api_key}
     }
@@ -107,13 +100,26 @@ if __name__ == '__main__':
     parser.add_argument("--data_path", help="path to the responses to evaluate")
     parser.add_argument("--split", required=True, choices=['train', 'validation', 'test'])
     parser.add_argument("--tasks_key", required=True, help="the tasks column name")
-    parser.add_argument("--out_dir")
+    parser.add_argument("--tasks_batch_size", type=int, default=200, help="number of tasks to run inference on before saving")
+    parser.add_argument("--out_dir", required=True)
     args = parser.parse_args()
     dataset = OrigData(args.data_path, args.split, args.tasks_key)
 
     generator = InitGenerationsRITS(args.model, dataset)
     out_path = generator.get_out_path(args.out_dir)
-    all_results_dict = generate_parallel(generator)
-    generator.dump_results(args.out_path, all_results_dict)
 
+    if os.path.exists(out_path):
+        existing = json.load(open(out_path))
+        tasks = [task for task in set(generator.data.get_tasks_list()) if task not in existing]
+        print(f"{len(existing)} already in file, {len(tasks)} to go")
+    else:
+        existing = {}
+        tasks = list(set(generator.data.get_tasks_list()))
 
+    all_generated = {}
+    for i in range(0, len(tasks), args.tasks_batch_size):
+        batch = tasks[i: i + args.tasks_batch_size]
+        batch_generated = generate_parallel(generator, batch)
+        all_generated = {**all_generated, **batch_generated}
+        all_results_dict = {**existing, **all_generated}
+        generator.dump_results(args.out_dir, all_results_dict)
