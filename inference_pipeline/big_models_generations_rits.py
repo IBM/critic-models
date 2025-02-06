@@ -27,10 +27,15 @@ class OrigData(BaseDataset):
     def get_tasks_list(self):
         return list(self.data[self.tasks_key])
 
+    def get_constraints_list(self):
+        all_constraints = [item for sublist in self.data["constraints"] for item in sublist]
+        all_unique_constraints = list(set(all_constraints))
+        return all_unique_constraints
+
 
 class InitGenerationsRITS(ConstrainedGenerationClassificationRITS):
 
-    def __init__(self, model, data):
+    def __init__(self, model, data: OrigData):
         super().__init__(data, model, max_new_tokens=1000)
 
     def get_name(self):

@@ -80,15 +80,15 @@ if __name__ == '__main__':
 
     if os.path.exists(out_path):
         existing = json.load(open(out_path))
-        tasks = [task for task in set(generator.data.get_tasks_list()) if task not in existing]
-        print(f"{len(existing)} already in file, {len(tasks)} to go")
+        constraints = [con for con in set(generator.data.get_constraints_list()) if con not in existing]
+        print(f"{len(existing)} already in file, {len(constraints)} to go")
     else:
         existing = {}
-        tasks = list(set(generator.data.get_tasks_list()))
+        constraints = list(set(generator.data.get_constraints_list()))
 
     all_generated = {}
-    for i in range(0, len(tasks), args.tasks_batch_size):
-        batch = tasks[i: i + args.tasks_batch_size]
+    for i in range(0, len(constraints), args.tasks_batch_size):
+        batch = constraints[i: i + args.tasks_batch_size]
         batch_generated = generate_parallel(generator, batch, categories)
         all_generated = {**all_generated, **batch_generated}
         all_results_dict = {**existing, **all_generated}
