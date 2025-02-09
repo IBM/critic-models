@@ -14,7 +14,8 @@
 #model_names=("meta-llama/Llama-3.2-3B-Instruct" "meta-llama/Llama-3.1-8B-Instruct" "google/gemma-2-9b-it")
 #model_names=("Qwen/Qwen2.5-0.5B-Instruct" "Qwen/Qwen2.5-1.5B-Instruct" "Qwen/Qwen2.5-3B-Instruct")  # "Qwen/Qwen2.5-7B-Instruct")
 #model_names=("meta-llama/Llama-3.2-1B-Instruct" "meta-llama/Llama-3.2-3B-Instruct"  "google/gemma-2-2b-it"  "Qwen/Qwen2.5-0.5B-Instruct" "Qwen/Qwen2.5-1.5B-Instruct" "Qwen/Qwen2.5-3B-Instruct")
-model_names=("google/gemma-2-9b-it" "meta-llama/Llama-3.1-8B-Instruct" "Qwen/Qwen2.5-7B-Instruct")
+#model_names=("google/gemma-2-9b-it" "meta-llama/Llama-3.1-8B-Instruct" "Qwen/Qwen2.5-7B-Instruct")
+model_names=("google/gemma-2-2b-it")
 
 dataset="gililior/temp-ds"
 tasks_key="task"
