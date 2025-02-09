@@ -7,7 +7,7 @@ from openai import OpenAI
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 from tqdm import tqdm
 from prepare_data.classify_constrained_generation_tasks import BaseDataset
-from datasets import load_from_disk
+from datasets import load_from_disk, load_dataset
 
 
 class OrigData(BaseDataset):
@@ -21,7 +21,7 @@ class OrigData(BaseDataset):
         return self.name_or_path
 
     def load_data(self, name_or_path):
-        data = load_from_disk(os.path.join(name_or_path, self.split))
+        data = load_dataset(name_or_path, split=self.split)
         return data
 
     def get_tasks_list(self):
