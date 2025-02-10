@@ -28,7 +28,7 @@ class OrigData(BaseDataset):
         return list(self.data[self.tasks_key])
 
     def get_constraints_list(self):
-        all_constraints = [item for sublist in self.data["constraints"] for item in sublist]
+        all_constraints = [item for sublist in self.data["decomposition"] for item in sublist]
         all_unique_constraints = list(set(all_constraints))
         return all_unique_constraints
 
@@ -66,8 +66,7 @@ def generate_parallel(obj, tasks):
         all_args[task] = (task, api_key, base_url, model_name)
         total += 1
     pbar = tqdm(total=total)
-    for task in all_args:
-        arguments = all_args[task]
+    for task, arguments in all_args.items():
         all_results[task] = pool.apply_async(infer_local, arguments, callback=lambda _: pbar.update(1))
     pool.close()
     pool.join()
@@ -82,19 +81,19 @@ def infer_local(task, api_key, base_url, model_name):
     gen_params = {
         GenParams.MAX_NEW_TOKENS: 1000,
         'temperature': 0,
-        'extra_headers':  {"RITS_API_KEY": api_key}
+        'extra_headers': {"RITS_API_KEY": api_key}
     }
 
     if client.base_url.host == "api.openai.com":
         gen_params["max_completion_tokens"] = gen_params.pop("max_new_tokens", None)
     else:
         gen_params['max_tokens'] = gen_params.pop("max_new_tokens", None)
-    
+
     completion = client.chat.completions.create(
-            messages=message,
-            model=model_name,
-            **gen_params
-        )
+        messages=message,
+        model=model_name,
+        **gen_params
+    )
     generated_text = completion.choices[0].message.content
     return [{"role": "user", "content": task}, {"role": "assistant", "content": generated_text}]
 

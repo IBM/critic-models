@@ -18,8 +18,6 @@ WATSONX_API_ENDPOINT = "https://us-south.ml.cloud.ibm.com"
 ERROR_SCORE = "ERR"
 
 
-
-
 class BaseDataset:
 
     def __init__(self, name_or_path):
@@ -116,10 +114,20 @@ class ConstrainedGenerationClassification:
             full_name = 'meta-llama/llama-3-70b-instruct'
         elif model_name == 'llama3.1-70b':
             full_name = 'meta-llama/llama-3-1-70b-instruct'
+        elif model_name == 'llama3.3-70b':
+            full_name = 'meta-llama/llama-3-3-70b-instruct'
         elif model_name == 'llama3-405b':
             full_name = 'meta-llama/llama-3-405b-instruct'
         elif model_name == 'llama3.1-405b':
             full_name = 'meta-llama/llama-3-1-405b-instruct-fp8'
+        elif model_name == 'llama3.1-8b':
+            full_name = 'meta-llama/Llama-3.1-8B-Instruct'
+        elif model_name == 'qwen2.5-72b':
+            full_name = 'Qwen/Qwen2.5-72B-Instruct'
+        elif model_name == 'deepseek-v3':
+            full_name = 'deepseek-ai/DeepSeek-V3'
+        elif model_name == 'mistral-large':
+            full_name = 'mistralai/mistral-large-instruct-2407'
         else:
             raise RuntimeError(f"model unknown {model_name}")
         return full_name
@@ -249,8 +257,8 @@ class ConstrainedGenerationClassificationRITS(ConstrainedGenerationClassificatio
     MAX_WORKERS = 20
 
     def __init__(self, data: BaseDataset, model_name, max_new_tokens):
-        self.model_name_for_endpoint = self.get_model_name_in_server(model_name).split("#")[0].split("/")[
-            -1].lower().replace("v0.1", "v01").replace(".", "-")
+        self.model_name_for_endpoint = self.get_model_name_in_server(model_name).split(
+            "/")[-1].lower().replace("v0.1", "v01").replace(".", "-")
         self.client = OpenAI(api_key=self.get_api_key(),
                              base_url=self.get_api_endpoint().format(self.model_name_for_endpoint))
         super().__init__(data, model_name, max_new_tokens)
@@ -302,6 +310,7 @@ class ConstrainedGenerationClassificationRITS(ConstrainedGenerationClassificatio
 
     def get_max_workers(self):
         return self.MAX_WORKERS
+
 
 class ArenaDataset(BaseDataset):
     def __init__(self, name_or_path):
