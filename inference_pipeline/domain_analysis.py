@@ -143,3 +143,11 @@ if __name__ == '__main__':
         all_generated = {**all_generated, **batch_generated}
         all_results_dict = {**existing, **all_generated}
         generator.dump_results(args.out_dir, all_results_dict)
+
+    Lists_of_domains = "\n\n".join([f"List {item[0]+1}: {item[1]}" for item in all_results_dict.items()])
+    prompt = f"Summarize the following lists of domains into a single list of 20 domains. Output only the summarizing list of 20 domains without any prefixes or suffixes. Here is ths list of domains::\n\n {Lists_of_domains}\n"
+    model_name = generator.model_name
+    api_key = generator.get_api_key()
+    base_url = generator.get_api_endpoint().format(generator.model_name_for_endpoint)
+    output = {'general_domains',infer_local(prompt, api_key, base_url, model_name)}
+    generator.dump_results(args.out_dir,output)
