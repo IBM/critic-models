@@ -1,4 +1,5 @@
 import os
+import random
 from argparse import ArgumentParser
 from prepare_data.classify_constrained_generation_tasks import ConstrainedGenerationClassificationRITS
 import json
@@ -39,7 +40,7 @@ class InitGenerationsRITS(ConstrainedGenerationClassificationRITS):
         super().__init__(data, model, max_new_tokens=1000)
 
     def get_name(self):
-        return f"init-generations-via-rits"
+        return f"domain-analysis-via-rits"
 
     def get_out_path(self, out_dir):
         dataset_name = self.dataset_name.split(os.sep)[-1].replace(".json", "")
@@ -54,7 +55,7 @@ class InitGenerationsRITS(ConstrainedGenerationClassificationRITS):
             f.write(str_feedback_dict)
 
 
-def generate_parallel(obj, prompt_lists):
+def generate_parallel(obj, prompt_lists, index):
     model_name = obj.model_name
     api_key = obj.get_api_key()
     base_url = obj.get_api_endpoint().format(obj.model_name_for_endpoint)
@@ -63,17 +64,17 @@ def generate_parallel(obj, prompt_lists):
     pool = Pool(cpu_count())
     total = 0
 
-    for prompt_list in prompt_lists:
-        all_args[prompt_list] = (prompt_list, api_key, base_url, model_name)
+    for j, prompt_list in enumerate(prompt_lists):
+        all_args[index+j] = (prompt_list, api_key, base_url, model_name)
         total += 1
     pbar = tqdm(total=total)
-    for prompt_list, arguments in all_args.items():
-        all_results[prompt_list] = pool.apply_async(infer_local, arguments, callback=lambda _: pbar.update(1))
+    for key, arguments in all_args.items():
+        all_results[key] = pool.apply_async(infer_local, arguments, callback=lambda _: pbar.update(1))
 
     pool.close()
     pool.join()
     print("DONE")
-    return {first_prompt: task_result.get() for first_prompt, task_result in all_results.items()}
+    return {k: task_result.get() for k, task_result in all_results.items()}
 
 
 def infer_local(task, api_key, base_url, model_name):
@@ -97,7 +98,7 @@ def infer_local(task, api_key, base_url, model_name):
         **gen_params
     )
     generated_text = completion.choices[0].message.content
-    return [{"role": "user", "content": task}, {"role": "assistant", "content": generated_text}]
+    return generated_text
 
 
 if __name__ == '__main__':
@@ -106,37 +107,39 @@ if __name__ == '__main__':
     parser.add_argument("--data_path", help="path to the responses to evaluate")
     parser.add_argument("--split", required=True, choices=['train', 'validation', 'test'])
     parser.add_argument("--tasks_key", required=True, help="the tasks column name")
-    parser.add_argument("--tasks_batch_size", type=int, default=200,
-                        help="number of prompt batches to run inference on before saving")
+    parser.add_argument("--num_tasks_in_prompt", type=int, default=100)
     parser.add_argument("--out_dir", required=True)
-    parser.add_argument("--prompt_batch_size", type=int, default=5,
-                        help="number of prompt to run in a single inference cycle")
+    parser.add_argument("--prompt_batch_size", type=int, default=10,
+                        help="number of prompt to run inference on before saving")
     args = parser.parse_args()
     dataset = OrigData(args.data_path, args.split, args.tasks_key)
 
     generator = InitGenerationsRITS(args.model, dataset)
     out_path = generator.get_out_path(args.out_dir)
 
+    all_tasks = sorted(set(generator.data.get_tasks_list()))
+    random.Random(0).shuffle(all_tasks)
+
     if os.path.exists(out_path):
         existing = json.load(open(out_path))
-        tasks = [task for task in set(generator.data.get_tasks_list()) if task not in existing]
-        print(f"{len(existing)} already in file, {len(tasks)} to go")
+        start_idx = max(int(k) for k in existing.keys())+1
+        print(f"{len(existing)} already in file")
     else:
         existing = {}
-        tasks = list(set(generator.data.get_tasks_list()))
+        start_idx = 0
 
     prompt_lists = []
-    for i in range(0, len(tasks), args.tasks_batch_size):
-        batch = tasks[i: i + args.tasks_batch_size]
+    for i in range(0, len(all_tasks), args.num_tasks_in_prompt):
+        batch = all_tasks[i: i + args.num_tasks_in_prompt]
         task_list = "\n".join([f"Task #{i+1}. {task}" for i, task in enumerate(batch)])
         prompt_lists.append(f"Each of the following tasks can be associated with a specific domain. " 
-                     "Generate a list of 20 domains that best represent the domains associated with "
-                       f"the tasks.\n Here is the list of tasks:\n\n{task_list}")
+                     "Generate a list of 10 domains that best represent the domains associated with "
+                       f"the tasks. Output only the list of domains, with no prefix or suffix. \nHere is the list of tasks:\n\n{task_list}.\nList of 10 domains:")
 
     all_generated = {}
-    for i in range(0, len(prompt_lists), args.prompt_batch_size):
+    for i in range(start_idx, len(prompt_lists), args.prompt_batch_size):
         batch = prompt_lists[i: i + args.prompt_batch_size]
-        batch_generated = generate_parallel(generator, batch)
+        batch_generated = generate_parallel(generator, batch, i)
         all_generated = {**all_generated, **batch_generated}
         all_results_dict = {**existing, **all_generated}
         generator.dump_results(args.out_dir, all_results_dict)
