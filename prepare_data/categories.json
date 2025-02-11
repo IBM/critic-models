@@ -1,10 +1,90 @@
 [
-  "Narrative and Storytelling Constraints",
-  "Tone and Style Constraints",
-  "Format and Structural Constraints",
-  "Content and Topic Constraints",
-  "Character and Dialogue Constraints",
-  "Technical and Analytical Constraints",
-  "Emotional and Relational Constraints",
-  "Creative and Thematic Constraints"
+  {
+    "name": "Style and Tone",
+    "description": "This category encompasses instructions that dictate the overall writing style, including formality, language register, emotional color, and imitation of specific authors or publications. It dictates the voice and feel of the output.",
+    "examples": [
+      "The writing style should emulate Ernest Hemingway's short, declarative sentences.",
+      "Maintain a formal and professional tone throughout the email.",
+      "Use a playful and whimsical tone to engage children.",
+      "Write in a concise and technical style, suitable for a scientific paper.",
+      "The language should be evocative and poetic, painting a vivid picture for the reader."
+    ]
+  },
+  {
+    "name": "Include / Avoid",
+    "description": "This category specifies elements that should be either included or excluded from the response. This can involve mentioning or adding specific keywords, phrases, or concepts, or avoiding particular words and ideas. It concerns the content and its restrictions.",
+    "examples": [
+      "Include at least three examples of alliteration in the poem.",
+      "Do not mention the specific brand name of the competitor.",
+      "Include a call to action at the end of the blog post, encouraging readers to subscribe.",
+      "Avoid using passive voice constructions.",
+      "Include a summary of the key findings at the beginning of the report."
+    ]
+  },
+  {
+    "name": "Format and Structure",
+    "description": "This category focuses on the organization and arrangement of the response. This includes instructions on using bullet points, tables, paragraphs, specific layouts, document structures or adhering to established formats. It dictates the physical form of the output.",
+    "examples": [
+      "Present the data in a clear and concise table format.",
+      "Organize the information into five distinct paragraphs, each addressing a separate aspect of the topic.",
+      "The report should follow the standard APA format, including citations and a bibliography.",
+      "Create a numbered list of steps in the process.",
+      "Each section should begin with a clear and informative heading."
+    ]
+  },
+  {
+    "name": "Length",
+    "description": "This category defines constraints on the length of the response, whether in terms of word count, character count, sentence limit, or overall brevity. It sets the quantitative boundaries of the output.",
+    "examples": [
+      "The summary should be no more than 150 words.",
+      "Each sentence should be kept under 20 words.",
+      "Provide a short and sweet answer, within 50 characters.",
+      "The article should be approximately 800-1000 words in length.",
+      "The description should be exactly 10 words long."
+    ]
+  },
+  {
+    "name": "Persona and Role",
+    "description": "This category instructs the AI to adopt a specific character, personality, or role in its response. This may involve imitating a particular person, acting as an expert in a field, or assuming a defined perspective. It defines the agent or narrator that provides the output.",
+    "examples": [
+      "Act as a seasoned travel blogger, providing tips and insights for visiting Rome.",
+      "Respond as if you are a friendly and helpful chatbot, assisting users with their inquiries.",
+      "Answer as a grumpy old man who is against modern technology.",
+      "Speak as if you are Albert Einstein explaining relativity.",
+      "Write the response from the point of view of a tree."
+    ]
+  },
+  {
+    "name": "Focus / Emphasis",
+    "description": "This category highlights specific topics, aspects, or keywords that the response should concentrate on. It directs the AI’s attention to certain elements and ensures that they are given prominence in the output.",
+    "examples": [
+      "Focus primarily on the economic impact of the new policy.",
+      "Highlight the innovative features of the product and its benefits for the user.",
+      "Emphasize the importance of teamwork and collaboration in achieving the project goals.",
+      "The article should primarily focus on the advantages of using renewable energy sources.",
+      "Prioritize the ethical implications of artificial intelligence in healthcare."
+    ]
+  },
+  {
+    "name": "Ensure Quality",
+    "description": "This category instructs the AI to meet some desired quality characteristics in its response. These may be general or specific quality constraints, like truthfulness or coherence of the output.",
+    "examples": [
+      "Ensure the information provided is accurate and up-to-date.",
+      "The response should be coherent, logical, and easy to understand.",
+      "Present the information in a simple and detailed manner.",
+      "Make sure the answer is not biased.",
+      "Cover all the key details."
+    ]
+  },
+  {
+    "name": "Editing",
+    "description": "This category focuses on modifications to an input text given by the user. The constraint specifies in what manner to change the input text, or which properties of the original text should be preserved.",
+    "examples": [
+      "Correct any grammatical errors in the provided text.",
+      "Change all instances of passive voice to active voice.",
+      "Ensure you preserve the meaning of the original sentence.",
+      "Simplify the language in the document to make it more accessible to a wider audience.",
+      "Shorten all sentences to 5 words."
+    ]
+  }
 ]

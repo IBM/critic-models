@@ -1,6 +1,3 @@
-
-
-from inference_pipeline.big_models_generations_rits import InitGenerationsRITS, OrigData
 import os
 from argparse import ArgumentParser
 import json
@@ -8,6 +5,13 @@ from multiprocessing import Pool, cpu_count
 from openai import OpenAI
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 from tqdm import tqdm
+
+from inference_pipeline.big_models_generations_rits import InitGenerationsRITS, OrigData
+
+
+class ClassificationRITS(InitGenerationsRITS):
+    def get_name(self):
+        return "constraint-classification-via-rits"
 
 
 def generate_parallel(obj, constraints, all_categories):
@@ -22,8 +26,7 @@ def generate_parallel(obj, constraints, all_categories):
         all_args[task] = (task, all_categories, api_key, base_url, model_name)
         total += 1
     pbar = tqdm(total=total)
-    for task in all_args:
-        arguments = all_args[task]
+    for task, arguments in all_args.items():
         all_results[task] = pool.apply_async(infer_local, arguments, callback=lambda _: pbar.update(1))
     pool.close()
     pool.join()
@@ -31,11 +34,13 @@ def generate_parallel(obj, constraints, all_categories):
     return {task: task_result.get() for task, task_result in all_results.items()}
 
 
-def infer_local(constraint, all_categories, api_key, base_url, model_name):
+def infer_local(constraint, all_categories: list[dict], api_key, base_url, model_name):
     str_categories = ""
-    for j, category in enumerate(all_categories):
-        str_categories += f"{j}. {category}\n"
-    msg = f"Classify the following constraint from a generation task into one (or more) of the categories listed below. Respond only with the category number(s). If the constraint fits multiple categories, provide the numbers separated by commas (e.g., '1,3,5').\nCategories:\n{str_categories}\n\nConstraint:{constraint}\n\nYour response:"
+    for j, category_dict in enumerate(all_categories):
+        str_categories += f"\n{j}. *{category_dict['name']}*: {category_dict['description']}\nExamples: "
+        for example in category_dict['examples']:
+            str_categories += f"\n - {example}"
+    msg = f"Classify the following constraint from a generation task into one (or more) of the categories listed below. Respond only with the category number(s). If the constraint fits multiple categories, provide the numbers separated by commas (e.g., '1,3,5'). If the constraint does not fit any of the categories from the list, respond with 'Other:' followed by a suggested title for an appropriate category.\nCategories:{str_categories}\n\nConstraint: {constraint}\n\nYour response:"
     message = [{'role': 'user', 'content': msg}]
     client = OpenAI(api_key=api_key, base_url=base_url)
 
@@ -61,10 +66,11 @@ def infer_local(constraint, all_categories, api_key, base_url, model_name):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("--ds", type=str, required=True)
+    parser.add_argument("--data_path", type=str, required=True)
     parser.add_argument("--split", type=str, required=True)
-    parser.add_argument("--out_path", type=str, required=True)
+    parser.add_argument("--out_dir", required=True)
     parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--tasks_key", required=True, help="the tasks column name")
     parser.add_argument("--tasks_batch_size", type=int, default=200, help="number of tasks to run inference on before saving")
     parser.add_argument("--categories_file", type=str, required=True)
 
@@ -75,7 +81,7 @@ if __name__ == '__main__':
 
     dataset = OrigData(args.data_path, args.split, args.tasks_key)
 
-    generator = InitGenerationsRITS(args.model, dataset)
+    generator = ClassificationRITS(args.model, dataset)
     out_path = generator.get_out_path(args.out_dir)
 
     if os.path.exists(out_path):
