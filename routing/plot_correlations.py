@@ -9,7 +9,7 @@ from transformers import AutoTokenizer
 from tqdm import tqdm
 
 CSV_PATH = "/Users/gililior/research/datasets/arena_data_v2/categories_single.csv"
-
+DOMAINS_PATH = "/Users/gililior/research/datasets/arena_data_v2/domains.csv"
 
 DUMP = "test"
 
@@ -29,8 +29,8 @@ def calculate(paths):
     token_count = [len(tokenizer.encode(text)) for text in ds["task"]]
     all_constraints = ds["decomposition"]
     all_lengths = [len(c) for c in all_constraints]
-    decomp_score = np.array(token_count) / np.array(all_lengths)
-    decomp_score_dict = {task: score for task, score in zip(ds["task"], decomp_score)}
+    # correlation between token count and length of constraints
+    print("correlation between token count and length of constraints", np.corrcoef(token_count, all_lengths)[0, 1])
     print("mean length of constraints", np.mean(all_lengths))
     # for each task, divide the length in tokens to the number of constraints
 
@@ -53,6 +53,29 @@ def calculate(paths):
     plt.tight_layout()
     plt.savefig(os.path.join("_output", "frequency_of_constraints.png"))
 
+    # Load data
+    domain_df = pd.read_csv(DOMAINS_PATH)
+    domain_count = Counter(domain_df["domain"])
+    domain_count.pop("Artificial Intelligence")
+    ordered_categories = sorted(domain_count.keys(), key=lambda x: domain_count[x], reverse=True)
+    ordered_counts = [domain_count[cat] for cat in ordered_categories]
+    ordered_categories = [cat if not pd.isna(cat) else "Other" for cat in ordered_categories]
+    colors = plt.cm.Set3.colors
+    plt.figure(figsize=(10, 8))
+    wedges, texts, autotexts = plt.pie(
+        ordered_counts, labels=ordered_categories, autopct='%1.1f%%',
+        colors=colors, startangle=0,
+        wedgeprops={'edgecolor': 'white'}, textprops={'fontsize': 14},
+        labeldistance=1.05,  # Moves labels closer to the pie
+        pctdistance=0.85  # Moves percentage labels slightly inward
+    )
+    for i, text in enumerate(texts):
+        text.set_bbox(dict(facecolor='none', edgecolor='none', alpha=0.75))  # Background for readability
+    plt.margins(0)
+    plt.tight_layout()
+    output_path = os.path.join("_output", "domain_piechart.png")
+    plt.savefig(output_path, dpi=300)  # Save with high resolution
+
 
     all_unique_constraints = set(all_constraints)
     print("number of unique constraints", len(all_unique_constraints))
@@ -63,7 +86,7 @@ def calculate(paths):
             preds = json.load(f)
         all_jsons[k] = {task: preds[task] for task in ds["task"]}
 
-    all_scores, all_constraints_scores, constraint_to_category = get_all_scores(all_jsons, decomp_score_dict, ds)
+    all_scores, all_constraints_scores, constraint_to_category = get_all_scores(all_jsons, token_count, ds)
     plt.figure(figsize=(10, 10))
     sorted_keys = sorted(all_constraints_scores.keys())
     data_for_violin = [all_constraints_scores[k]["score"].values.tolist() for k in sorted_keys]
@@ -167,18 +190,14 @@ def calculate(paths):
     plt.savefig(os.path.join("_output", "line_plot_of_mean_score_by_num_constraints.png"))
 
     for i, model in enumerate(models_sorted):
-        plt.figure(f"violin plot of decomp score for {model}")
-        df = all_scores[model]
-        df = df[df["num_constraints"] == 1]
-        all_scores_current = list(sorted(df["mean_score"].unique()))
-        group_by_score = df.groupby("mean_score")
-        data_for_violin = [group_by_score.get_group(score)["decomp_score"].values.tolist() for score in all_scores_current]
-        plt.violinplot(data_for_violin, showmeans=True, vert=True, widths=2)
-        plt.title(f"distribution of decomposition scores")
+        # correlation between token count and mean score
+        plt.figure(f"{model} scatter plot")
+        plt.scatter(all_scores[model]["token_count"], all_scores[model]["mean_score"], color=hex_colors[i])
+        plt.xlabel("Token count", fontsize=12)
+        plt.ylabel("Mean fraction of fulfilled constraints", fontsize=12)
+        plt.title(f"Correlation between token count and mean score for {model}")
         plt.tight_layout()
-        plt.xticks(np.arange(1, len(all_scores_current) + 1), all_scores_current)
-        plt.xlabel("Mean fraction of fulfilled constraints", fontsize=12)
-        plt.savefig(os.path.join("_output", f"violin_plot_of_decomp_score_{model}.png"))
+        plt.savefig(os.path.join("_output", f"scatter_plot_{model}.png"))
 
     fig, ax = plt.subplots(figsize=(12, 6))
     bars = ax.bar(models_sorted[::-1], means[::-1], color=hex_colors[::-1], width=0.5)
@@ -209,7 +228,7 @@ def calculate(paths):
     count = Counter(constraint_to_category.values())
     labels = list(count.keys())
     # plot frequencies
-    plt.bar(labels, [count[l] for l in labels], color='orange', edgecolor='black')
+    plt.bar(labels, [count[l] for l in labels], color='#9467bd', edgecolor='black')
     plt.xticks(rotation=45, ha='right')
     plt.ylabel("Frequency", fontsize=12)
     plt.tight_layout()
@@ -218,6 +237,7 @@ def calculate(paths):
     plt.figure("bar plot of mean score by category")
 
     all_cat_scores = []
+    labels = labels[:-1]
     for category in labels:
         cat_scores = []
         constraints_in_cat = [constraint for constraint in constraint_to_category if constraint_to_category[constraint] == category]
@@ -263,19 +283,71 @@ def calculate(paths):
 
     # heatmap of co-occurances in task level
     heatmap = np.zeros((len(labels), len(labels)))
-    for constraints in ds["decomposition"]:
+    heatmap_tasks = np.zeros((len(ordered_categories), len(labels)))
+    n_tasks = 0
+    for i, constraints in enumerate(ds["decomposition"]):
+        task_domain = domain_df[domain_df["task"] == ds["task"][i]]["domain"].values[0]
         categories = set()
         for constraint in constraints:
             constraint_label = constraint_to_category[constraint]
+            if constraint_label == "Other":
+                continue
             categories.add(constraint_label)
+        if len(categories) < 2:
+            continue
+        n_tasks += 1
         all_pairs = set([(i, j) for i in categories for j in categories])
-        for i, j in all_pairs:
-            heatmap[labels.index(i), labels.index(j)] += 1
+        for k, j in all_pairs:
+            heatmap[labels.index(k), labels.index(j)] += 1
+        # if task_domain == "Artificial Intelligence" or pd.isna(task_domain):
+        #     continue
+        # for category in categories:
+        #     heatmap_tasks[ordered_categories.index(task_domain), labels.index(category)] += 1
+    # normalize heatmap by category frequency
+    new_heatmap = np.zeros((len(labels), len(labels)))
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            if i == j:
+                new_heatmap[i, j] = 1
+            else:
+                new_heatmap[i, j] = heatmap[i, j] / (heatmap[i, i] * heatmap[j, j] / n_tasks)
+
+
+    # heatmap_tasks /= heatmap_tasks.sum(axis=1)[:, np.newaxis]
+    #
+    #
+    # plt.figure("heatmap of co-occurrences  domains_and_constraints")
+    #
+    # # heatmap of coocurances between tasks and constraints
+    # img = plt.imshow(heatmap_tasks, cmap='Reds', interpolation='nearest')
+    #
+    # # Set axis labels
+    # plt.xticks(range(len(labels)), labels, rotation=45, ha='right')
+    # plt.yticks(range(len(ordered_categories)), ordered_categories)
+    #
+    # # Add colorbar and set label
+    # cbar = plt.colorbar(img)
+    # # cbar.set_label("% tasks", fontsize=12)  # Add title to the colorbar
+    #
+    # plt.tight_layout()
+    # plt.savefig(os.path.join("_output", "heatmap_of_co-occurrences_domains_and_constraints.png"))
+
     plt.figure("heatmap of co-occurrences in tasks")
-    plt.imshow(heatmap, cmap='Reds', interpolation='nearest')
+
+    mask = np.triu(np.ones_like(heatmap, dtype=bool), k=1)
+    masked_heatmap = np.ma.masked_where(mask, new_heatmap)
+
+    # Plot the heatmap
+    img = plt.imshow(masked_heatmap, cmap='BrBG', interpolation='nearest', vmin=0, vmax=2)
+
+    # Set axis labels
     plt.xticks(range(len(labels)), labels, rotation=45, ha='right')
     plt.yticks(range(len(labels)), labels)
-    plt.colorbar()
+
+    # Add colorbar and set label
+    cbar = plt.colorbar(img)
+    cbar.set_label("Expected ratio", fontsize=12)  # Add title to the colorbar
+
     plt.tight_layout()
     plt.savefig(os.path.join("_output", "heatmap_of_co-occurrences_in_tasks.png"))
 
@@ -327,6 +399,8 @@ def calculate(paths):
     each_cat_mean /= len(models_sorted)
     # concatenate the mean of each category to the heatmap as another column
     heatmap = np.concatenate((heatmap, each_cat_mean.reshape(-1, 1)), axis=1)
+    # save the heatmap to a csv
+    np.savetxt(os.path.join("_output", "heatmap_of_scores_co-occurrences_in_tasks_mean_all_models.csv"), heatmap, delimiter=",")
     plt.figure(f"heatmap of constraint scores co-occurrences in tasks - mean all models")
     plt.imshow(heatmap, cmap='Blues', interpolation='nearest')
     plt.xticks(range(len(labels)+1), labels + ['Baseline'], rotation=45, ha='right')
@@ -347,7 +421,7 @@ def calculate(paths):
 
 
 
-def get_all_scores(all_jsons, decomp_score_dict, ds):
+def get_all_scores(all_jsons, token_count, ds):
     all_scores = {k: [] for k in all_jsons}
     all_constraints_scores = {k: [] for k in all_jsons}
     df_categories = pd.read_csv(CSV_PATH)
@@ -383,8 +457,8 @@ def get_all_scores(all_jsons, decomp_score_dict, ds):
                 continue
             mean_score = np.mean(binary_scores)
             num_constraints = len(binary_scores)
-            all_scores[k].append((mean_score, num_constraints, decomp_score_dict[task], decomposition_len))
-        all_scores[k] = pd.DataFrame(all_scores[k], columns=["mean_score", "num_constraints", "decomp_score", "decomposition_len"])
+            all_scores[k].append((mean_score, num_constraints, token_count[i], decomposition_len))
+        all_scores[k] = pd.DataFrame(all_scores[k], columns=["mean_score", "num_constraints", "token_count", "decomposition_len"])
         not_matching = np.where(all_scores[k]["num_constraints"] != all_scores[k]["decomposition_len"])[0]
         blacklist_ids.extend(ds.select(not_matching)["conversation_id"])
         all_constraints_scores[k] = pd.DataFrame(all_constraints_scores[k])
