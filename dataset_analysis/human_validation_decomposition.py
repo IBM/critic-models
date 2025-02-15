@@ -23,8 +23,9 @@ if "task_index" not in st.session_state:
 if "evaluation_results" not in st.session_state:
     st.session_state.evaluation_results = []
 
+name = uploaded_file.split("-")[-1].replace(".json", "")
 # Load existing evaluation results if available
-csv_filename = "evaluation_results.csv"
+csv_filename = os.path.join(f"evaluation_results_{name}.csv")
 if os.path.exists(csv_filename):
     existing_results = pd.read_csv(csv_filename)
     evaluated_tasks = set(existing_results["Task"].tolist())
@@ -85,6 +86,6 @@ else:
         st.download_button(
             label="Download Results as CSV",
             data=csv,
-            file_name="evaluation_results.csv",
+            file_name="evaluation_results_gili.csv",
             mime="text/csv"
         )
