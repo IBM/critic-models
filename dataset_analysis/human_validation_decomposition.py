@@ -23,7 +23,7 @@ if "task_index" not in st.session_state:
 if "evaluation_results" not in st.session_state:
     st.session_state.evaluation_results = []
 
-name = uploaded_file.split("-")[-1].replace(".json", "")
+name = uploaded_file.name.split("-")[-1].replace(".json", "")
 # Load existing evaluation results if available
 csv_filename = os.path.join(f"evaluation_results_{name}.csv")
 if os.path.exists(csv_filename):
