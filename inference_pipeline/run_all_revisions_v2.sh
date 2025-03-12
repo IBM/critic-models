@@ -14,7 +14,7 @@
 models=("meta-llama/Llama-3.1-8B-Instruct" "google/gemma-2-9b-it" "Qwen/Qwen2.5-7B-Instruct")
 
 init_response_dir="/cs/snapless/gabis/gililior/wild-if-eval-code/model_predictions"
-out_dir="/cs/snapless/gabis/gililior/wild-if-eval-revisions"
+out_dir="/cs/snapless/gabis/gililior/wild-if-eval-revisions/7b-models"
 mkdir -p $out_dir
 mkdir -p slurm_logs
 
