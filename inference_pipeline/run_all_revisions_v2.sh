@@ -4,7 +4,7 @@
 #SBATCH -c2
 #SBATCH --time=12:00:00
 #SBATCH --gres=gpu:1,vmem:40g
-#SBATCH --exclude=firth-xx
+#SBATCH --exclude=firth-01,firth-02
 #SBATCH --error=slurm_logs/slurm_%A_%a.err
 #SBATCH --output=slurm_logs/slurm_%A_%a.out
 #SBATCH --job-name=revisions-smaller-models
