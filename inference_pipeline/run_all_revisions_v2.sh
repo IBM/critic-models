@@ -3,18 +3,18 @@
 #SBATCH --mem=40gb
 #SBATCH -c2
 #SBATCH --time=12:00:00
-#SBATCH --gres=gpu:1,vmem:40g
+#SBATCH --gres=gpu:1,vmem:24g
 #SBATCH --error=slurm_logs/slurm_%A_%a.err
 #SBATCH --output=slurm_logs/slurm_%A_%a.out
-#SBATCH --job-name=revisions-bigger-models
+#SBATCH --job-name=revisions-smaller-models
 #SBATCH --mail-user=gili.lior@mail.huji.ac.il
 #SBATCH --mail-type=ALL
 
-#models=("meta-llama/Llama-3.2-3B-Instruct" "google/gemma-2-2b-it" "Qwen/Qwen2.5-3B-Instruct")
-models=("meta-llama/Llama-3.1-8B-Instruct" "google/gemma-2-9b-it" "Qwen/Qwen2.5-7B-Instruct")
+models=("meta-llama/Llama-3.2-3B-Instruct" "google/gemma-2-2b-it" "Qwen/Qwen2.5-3B-Instruct")
+#models=("meta-llama/Llama-3.1-8B-Instruct" "google/gemma-2-9b-it" "Qwen/Qwen2.5-7B-Instruct")
 
 init_response_dir="/cs/snapless/gabis/gililior/wild-if-eval-code/model_predictions"
-out_dir="/cs/snapless/gabis/gililior/wild-if-eval-revisions/7b-models"
+out_dir="/cs/snapless/gabis/gililior/wild-if-eval-revisions/3b-models"
 mkdir -p $out_dir
 mkdir -p slurm_logs
 
