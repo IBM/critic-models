@@ -31,8 +31,8 @@ for ((i=0; i<${#models[@]}; i++)); do
   for ((j=0; j<${#models[@]}; j++)); do
     generator="${models[i]}"
     revision_model="${models[j]}"
-    generator_no_family=$(echo $generator | sed 's/.*\///')
-    revision_no_family=$(echo $revision_model | sed 's/.*\///')
+    generator_no_family=$(echo $generator | sed 's/.*\///' | sed 's/-Instruct//' | sed 's/-it//')
+    revision_no_family=$(echo $revision_model | sed 's/.*\///' | sed 's/-Instruct//' | sed 's/-it//')
     path_to_init_response_generator="${init_response_dir}/${generator_no_family}-0shot-wild-if-eval.json"
     out_path="${out_dir}/${revision_no_family}-revise-one-step-${generator_no_family}.json"
     if [ $index -eq $task_id ]; then
