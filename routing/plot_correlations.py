@@ -420,8 +420,11 @@ def calculate(paths):
 
     plt.figure("bar plot of mean score by category only big models")
     bar_width = 0.12
-    models_to_include = ["Deepseek-v3", "Gemma-2-9b", "Llama3.3-70b", "Llama3.1-405b",  "Mistral-large",  "Qwen2.5-72b"]
+    models_to_include = ["Deepseek-v3", "Llama3.3-70b", "Mistral-large", "Llama3.1-405b", "Qwen2.5-72b", "Gemma-2-9b"]
+    reorg_categories = ["Focus / Emphasis", "Style and Tone", "Persona and Role", "Include / Avoid", "Ensure Quality", "Format and Structure", "Editing", "Length"]
+    reorg_categories_idx = [category_constraint_labels.index(cat) for cat in reorg_categories]
     only_big_model_scores = all_cat_scores[:, [models_sorted.index(model) for model in models_to_include]]
+    only_big_model_scores = only_big_model_scores[reorg_categories_idx]
     only_big_model_colors = [model_colors[models_sorted.index(model)] for model in models_to_include]
     fig, ax = plt.subplots(figsize=(12, 6))
 
@@ -430,7 +433,7 @@ def calculate(paths):
 
     # Formatting
     ax.set_xticks(x + (bar_width * (len(models_to_include) - 1)) / 2)
-    ax.set_xticklabels(category_constraint_labels, rotation=45, ha='right')
+    ax.set_xticklabels(reorg_categories, rotation=45, ha='right')
     ax.set_ylabel('Fraction of fulfilled constraints')
     ax.legend(bbox_to_anchor=(0, 1.1), loc='upper left', ncol=len(models_to_include))
     plt.tight_layout()

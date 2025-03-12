@@ -79,7 +79,7 @@ for i in range(len(unique_names)):
 # print("Mean Weighted Cohen's Kappa (Linear):", np.mean(correctness_mean))
 
 
-df_llm_aaj_annotations = pd.read_csv("results/llm_aaj_annotations.csv")
+df_llm_aaj_annotations = pd.read_csv("results/llm_aaj_annotations_asaf.csv")
 y_true = df_llm_aaj_annotations["binary_score"].tolist()
 y_pred = df_llm_aaj_annotations["human_eval"].tolist()
 hamming = hamming_loss(y_true, y_pred)
