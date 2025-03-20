@@ -88,7 +88,10 @@ def main(model_name):
     max_pred = np.argmax(predictions.predictions, axis=1)
     json_out = {}
     for i, sample in enumerate(tokenized_dataset["test"].iter(batch_size=1)):
-        print(sample)
+        print(sample["sample"])
+        print(max_pred[i])
+        print(label2id)
+        print(id2label)
         json_out[sample["sample"]] = id2label[str(max_pred[i])]
 
     # Train the model
