@@ -7,10 +7,9 @@ import numpy as np
 from sklearn.metrics import f1_score
 import json
 
-batch_size = 16
 DATA_PATH = "_output/dataset.csv"
 
-def main(model_name):
+def main(model_name, epochs, lr, batch_size):
     dataset = pd.read_csv(DATA_PATH)
     dataset = dataset[dataset["small_model_perfect"]!=1] # remove tasks where small model is perfect
     labels = []
@@ -60,8 +59,8 @@ def main(model_name):
         output_dir="ModernBERT-domain-classifier",
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size // 2,
-        learning_rate=5e-5,
-        num_train_epochs=1,
+        learning_rate=lr,
+        num_train_epochs=epochs,
         bf16=not torch.cuda.is_available(),  # Use bfloat16 if supported
         optim="adamw_torch_fused",
         logging_strategy="steps",
@@ -94,7 +93,7 @@ def main(model_name):
     for i, sample in enumerate(tokenized_dataset["test"].iter(batch_size=1)):
         json_out[sample["sample"][0]] = max_pred[i]
 
-    out_path = f"_output/modernbert_predictions.json"
+    out_path = f"_output/modernbert_predictions/{batch_size}batch_size_{epochs}epochs_{lr}lr.json"
     with open(out_path, "w") as f:
         pretty_json = json.dumps(json_out, indent=2)
         f.write(pretty_json)
@@ -102,5 +101,8 @@ def main(model_name):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--model", default="answerdotai/ModernBERT-base")
+    parser.add_argument("--epochs", default=5, type=int)
+    parser.add_argument("--lr", default=5e-5, type=float)
+    parser.add_argument("--batch_size", default=16, type=int)
     args = parser.parse_args()
-    main(args.model)
+    main(args.model, args.epochs, args.lr, args.batch_size)
