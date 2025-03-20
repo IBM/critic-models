@@ -6,7 +6,7 @@ from datasets import Dataset
 import numpy as np
 from sklearn.metrics import f1_score
 
-batch_size = 32
+batch_size = 16
 DATA_PATH = "_output/dataset.csv"
 
 def main(model_name):
@@ -60,7 +60,7 @@ def main(model_name):
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size // 2,
         learning_rate=5e-5,
-        num_train_epochs=1,
+        num_train_epochs=10,
         bf16=not torch.cuda.is_available(),  # Use bfloat16 if supported
         optim="adamw_torch_fused",
         logging_strategy="steps",
@@ -84,15 +84,16 @@ def main(model_name):
         compute_metrics=compute_metrics,
     )
 
-    # Train the model
-    trainer.train()
-
     predictions = trainer.predict(tokenized_dataset["test"])
     max_pred = np.argmax(predictions.predictions, axis=1)
     json_out = {}
     for i, sample in enumerate(tokenized_dataset["test"].iter(batch_size=1)):
         print(sample)
         json_out[sample["sample"]] = id2label[str(max_pred[i])]
+
+    # Train the model
+    trainer.train()
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
