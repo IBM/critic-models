@@ -6,7 +6,7 @@ from datasets import Dataset
 import numpy as np
 from sklearn.metrics import f1_score
 
-batch_size = 8
+batch_size = 16
 DATA_PATH = "_output/dataset.csv"
 
 def main(model_name):
@@ -31,7 +31,7 @@ def main(model_name):
     def tokenize(batch):
         return tokenizer(batch['sample'], padding=True, truncation=True)
 
-    tokenized_dataset = ds_split.map(tokenize, batched=True, remove_columns=["sample"], batch_size=-1)
+    tokenized_dataset = ds_split.map(tokenize, batched=True, batch_size=-1)
 
     # prepare labels
     labels = sorted(set(tokenized_dataset["train"]["labels"]))
@@ -60,7 +60,7 @@ def main(model_name):
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size // 2,
         learning_rate=5e-5,
-        num_train_epochs=5,
+        num_train_epochs=1,
         bf16=not torch.cuda.is_available(),  # Use bfloat16 if supported
         optim="adamw_torch_fused",
         logging_strategy="steps",
@@ -90,6 +90,14 @@ def main(model_name):
     # Evaluate the model
     results = trainer.evaluate()
     print(results)
+
+    predictions = trainer.predict(tokenized_dataset["test"])
+    print(predictions)
+    print(predictions.predictions)
+    print(predictions[0])
+    json_out = {}
+    for i, sample in tokenized_dataset["test"].iter(batch_size=1):
+        json_out[sample["sample"]] = id2label[str(predictions.predictions[i].argmax())]
 
 if __name__ == '__main__':
     parser = ArgumentParser()
