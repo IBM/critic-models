@@ -1,6 +1,7 @@
 #!/bin/bash
 
-models=("llama3.3-70b" "mistral-large" "deepseek-v3")
+models=("mistral-large" "deepseek-v3")
+models=("llama3.3-70b" "qwen2.5-72b")
 
 init_response_dir="/path/to/repo/wild-if-eval-code/model_predictions"
 out_dir="/path/to/out/dir"
