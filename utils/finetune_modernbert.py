@@ -6,7 +6,7 @@ from datasets import Dataset
 import numpy as np
 from sklearn.metrics import f1_score
 
-batch_size = 16
+batch_size = 32
 DATA_PATH = "_output/dataset.csv"
 
 def main(model_name):
@@ -87,17 +87,11 @@ def main(model_name):
     # Train the model
     trainer.train()
 
-    # Evaluate the model
-    results = trainer.evaluate()
-    print(results)
-
     predictions = trainer.predict(tokenized_dataset["test"])
-    print(predictions)
-    print(predictions.predictions)
-    print(predictions[0])
+    max_pred = np.argmax(predictions.predictions, axis=1)
     json_out = {}
-    for i, sample in tokenized_dataset["test"].iter(batch_size=1):
-        json_out[sample["sample"]] = id2label[str(predictions.predictions[i].argmax())]
+    for i, sample in enumerate(tokenized_dataset["test"].iter(batch_size=1)):
+        json_out[sample["sample"]] = id2label[str(max_pred[i])]
 
 if __name__ == '__main__':
     parser = ArgumentParser()
