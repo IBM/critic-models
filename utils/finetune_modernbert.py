@@ -91,7 +91,7 @@ def main(model_name, epochs, lr, batch_size):
     max_pred = np.argmax(predictions.predictions, axis=1)
     json_out = {}
     for i, sample in enumerate(tokenized_dataset["test"].iter(batch_size=1)):
-        json_out[sample["sample"][0]] = max_pred[i]
+        json_out[sample["sample"][0]] = int(max_pred[i])
 
     out_path = f"_output/modernbert_predictions/{batch_size}batch_size_{epochs}epochs_{lr}lr.json"
     with open(out_path, "w") as f:
