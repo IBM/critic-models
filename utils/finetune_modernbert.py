@@ -5,6 +5,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trai
 from datasets import Dataset
 import numpy as np
 from sklearn.metrics import f1_score
+import json
 
 batch_size = 16
 DATA_PATH = "_output/dataset.csv"
@@ -84,15 +85,19 @@ def main(model_name):
         compute_metrics=compute_metrics,
     )
 
+    # Train the model
+    trainer.train()
+
     predictions = trainer.predict(tokenized_dataset["test"])
     max_pred = np.argmax(predictions.predictions, axis=1)
     json_out = {}
     for i, sample in enumerate(tokenized_dataset["test"].iter(batch_size=1)):
         json_out[sample["sample"][0]] = max_pred[i]
 
-    # Train the model
-    trainer.train()
-
+    out_path = f"_output/modernbert_predictions.json"
+    with open(out_path, "w") as f:
+        pretty_json = json.dumps(json_out, indent=2)
+        f.write(pretty_json)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
