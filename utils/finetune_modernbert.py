@@ -1,13 +1,12 @@
 from argparse import ArgumentParser
 import pandas as pd
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
 from datasets import Dataset
-from transformers import Trainer, TrainingArguments
 import numpy as np
 from sklearn.metrics import f1_score
 
-batch_size=8
-
+batch_size = 8
 DATA_PATH = "_output/dataset.csv"
 
 def main(model_name):
@@ -25,10 +24,10 @@ def main(model_name):
     ds = Dataset.from_pandas(dataset)
     ds_split = ds.train_test_split(test_size=0.2, seed=42)
 
-    # Load Tokenizer
+    # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-    # Tokenize helper function
+    # Tokenize function
     def tokenize(batch):
         return tokenizer(batch['sample'], padding=True, truncation=True)
 
@@ -45,43 +44,38 @@ def main(model_name):
 
     # Download the model from huggingface.co/models
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=num_labels, label2id=label2id, id2label=id2label,
+        model_name, num_labels=num_labels, label2id=label2id, id2label=id2label, device_map="auto"
     )
 
-
-
-    # Metric helper method
+    # Metric function
     def compute_metrics(eval_pred):
         predictions, labels = eval_pred
         predictions = np.argmax(predictions, axis=1)
-        score = f1_score(
-            labels, predictions, labels=labels, pos_label=1, average="weighted"
-        )
-        return {"f1": float(score) if score == 1 else score}
+        score = f1_score(labels, predictions, average="weighted")
+        return {"f1": score}
 
-    # Define training args
+    # Training arguments with CUDA acceleration
     training_args = TrainingArguments(
         output_dir="ModernBERT-domain-classifier",
         per_device_train_batch_size=batch_size,
-        per_device_eval_batch_size=batch_size//2,
+        per_device_eval_batch_size=batch_size // 2,
         learning_rate=5e-5,
         num_train_epochs=5,
-        bf16=True,  # bfloat16 training
-        optim="adamw_torch_fused",  # improved optimizer
-        # logging & evaluation strategies
+        bf16=True,  # Use bfloat16 if supported
+        optim="adamw_torch_fused",
         logging_strategy="steps",
         logging_steps=100,
         eval_strategy="epoch",
         save_strategy="no",
         save_total_limit=0,
         load_best_model_at_end=False,
-        use_mps_device=True,
+        use_mps_device=not torch.cuda.is_available(),
         metric_for_best_model="f1",
-        # push to hub parameters
         push_to_hub=False,
+        fp16=torch.cuda.is_available(),  # Enable fp16 if CUDA is available
     )
 
-    # Create a Trainer instance
+    # Trainer with CUDA support
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -89,8 +83,9 @@ def main(model_name):
         eval_dataset=tokenized_dataset["test"],
         compute_metrics=compute_metrics,
     )
+
+    # Train the model
     trainer.train()
-    # {'train_runtime': 3642.7783, 'train_samples_per_second': 1.235, 'train_steps_per_second': 0.04, 'train_loss': 0.535627057634551, 'epoch': 5.0}
 
     # Evaluate the model
     results = trainer.evaluate()
