@@ -92,7 +92,7 @@ def main(model_name):
         print(max_pred[i])
         print(label2id)
         print(id2label)
-        json_out[sample["sample"]] = id2label[str(max_pred[i])]
+        json_out[sample["sample"]] = max_pred[i]
 
     # Train the model
     trainer.train()
