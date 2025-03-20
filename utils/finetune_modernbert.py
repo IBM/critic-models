@@ -61,7 +61,7 @@ def main(model_name):
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size // 2,
         learning_rate=5e-5,
-        num_train_epochs=10,
+        num_train_epochs=1,
         bf16=not torch.cuda.is_available(),  # Use bfloat16 if supported
         optim="adamw_torch_fused",
         logging_strategy="steps",

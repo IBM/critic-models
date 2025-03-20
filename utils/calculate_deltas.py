@@ -45,6 +45,39 @@ if __name__ == '__main__':
             json_scores = json.load(f)
         revision_scores[models] = parse_scores(json_scores, tasks_list)
 
+    predictions_path = "_output/modernbert_predictions.json"
+    with open(predictions_path, "r") as f:
+        predictions = json.load(f)
+
+    random_preds = {sample: np.random.randint(0, 3) for sample in predictions}
+
+    id_to_label = {0: "both_revision_and_bigger_not_better", 1: "revision_with_gemma_is_best", 2: "inference_big_llama_0shot_is_best"}
+    pred_scores = []
+    all_small_model_preds = []
+    all_revision_model_preds = []
+    all_big_llama_model_preds = []
+    random_model_preds = []
+    for task in predictions:
+        pred = predictions[task]
+        index_sample = tasks_list.index(task)
+        if id_to_label[pred] == "both_revision_and_bigger_not_better":
+            col = zero_shot_scores["Llama-3.1-8B"]
+        elif id_to_label[pred] == "revision_with_gemma_is_best":
+            col = revision_scores[("gemma-2-9b", "Llama-3.1-8B")]
+        else:
+            col = zero_shot_scores["llama3.3-70b"]
+        score = col[index_sample]
+        pred_scores.append(score)
+        all_small_model_preds.append(zero_shot_scores["Llama-3.1-8B"][index_sample])
+        all_revision_model_preds.append(revision_scores[("gemma-2-9b", "Llama-3.1-8B")][index_sample])
+        all_big_llama_model_preds.append(zero_shot_scores["llama3.3-70b"][index_sample])
+        random_int = random_preds[task]
+        if random_int == 0:
+            random_model_preds.append(zero_shot_scores["Llama-3.1-8B"][index_sample])
+        elif random_int == 1:
+            random_model_preds.append(revision_scores[("gemma-2-9b", "Llama-3.1-8B")][index_sample])
+        else:
+            random_model_preds.append(zero_shot_scores["llama3.3-70b"][index_sample])
 
     deltas = pd.DataFrame()
     deltas["llama3.1-8b-0shot"] = zero_shot_scores["Llama-3.1-8B"]
