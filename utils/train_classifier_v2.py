@@ -18,7 +18,8 @@ np.random.seed(42)
 
 def prepare_labels(path_to_dataset):
     labels_df = pd.read_csv(path_to_dataset)
-    labels_df = labels_df[~labels_df["small_model_perfect"]]
+    labels_df = labels_df[labels_df["gemma_0shot"] < 1]
+    labels_df = labels_df[~labels_df["all_three_models_same"]]
     return labels_df
 
 
@@ -51,20 +52,20 @@ def train_sklearn_models(X_train, y_train, X_test, y_test):
     print(Counter(y_test))
 
     random = np.random.RandomState(42).random_integers(y_test.min(), y_test.max() + 1, len(y_test))
-    random_acc = (random == y_test.ravel()).mean()
+    random_acc = (random == y_test).mean()
     print(f"Random Accuracy: {random_acc:.2f}")
 
     # shuffle y_test
     y_test_shuffled = np.random.RandomState(42).permutation(y_test)
-    shuffled_acc = (y_test_shuffled == y_test.ravel()).mean()
+    shuffled_acc = (y_test_shuffled == y_test).mean()
     print(f"Shuffle Accuracy: {shuffled_acc:.2f}")
 
     preds = {}
     for name, clf in classifiers.items():
-        clf.fit(X_train, y_train.ravel())
+        clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         preds[name] = y_pred.tolist()
-        accuracy = (y_pred == y_test.ravel()).mean()
+        accuracy = (y_pred == y_test).mean()
         print(Counter(y_pred))
         print(f"{name} Accuracy: {accuracy:.2f}")
     return preds
@@ -78,11 +79,9 @@ def main(path_to_embeddings, path_to_samples_list, path_to_labels):
     test_data = all_data.drop(train_data.index)
 
     X_train = np.stack(train_data["embedding"].values)
-    y_train = train_data.iloc[:, 2:5].to_numpy()  # Keep full binary format
-    y_train = np.argmax(y_train, axis=1)
+    y_train = train_data["label"]  # Keep full binary format
     X_test = np.stack(test_data["embedding"].values)
-    y_test = test_data.iloc[:, 2:5].to_numpy()
-    y_test = np.argmax(y_test, axis=1)
+    y_test = test_data["label"]
 
     # Train and evaluate sklearn models
     predictions = train_sklearn_models(X_train, y_train, X_test, y_test)
@@ -92,7 +91,7 @@ def main(path_to_embeddings, path_to_samples_list, path_to_labels):
         out_json = {}
         for i, sample in enumerate(test_data["sample"]):
             out_json[sample] = predictions[name][i]
-        with open(f"_output/simple_classifiers/{name}.json", "w") as f:
+        with open(f"_output/simple_classifiers_same_size/{name}.json", "w") as f:
             str_to_write = json.dumps(out_json, indent=2)
             f.write(str_to_write)
 

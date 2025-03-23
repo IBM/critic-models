@@ -1,5 +1,5 @@
 name,mean,std,revision_calls,big_model_calls
-random_preds,0.465,0.336,590,626
+random_preds,0.459,0.339,584,619
 small_model_preds,0.331,0.283,0,0
 revision_model_preds,0.467,0.334,1809,0
 big_llama_model_preds,0.568,0.337,0,1809

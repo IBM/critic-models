@@ -11,15 +11,17 @@ DATA_PATH = "_output/dataset.csv"
 
 def main(model_name, epochs, lr, batch_size):
     dataset = pd.read_csv(DATA_PATH)
-    dataset = dataset[dataset["small_model_perfect"]!=1] # remove tasks where small model is perfect
+    # dataset = dataset[dataset["small_model_perfect"]!=1] # remove tasks where small model is perfect
     labels = []
     for _, row in dataset.iterrows():
-        if row["both_revision_and_bigger_not_better"]:
+        if row["small_model_perfect"]:
             labels.append(0)
-        elif row["revision_with_gemma_is_best"]:
+        elif row["both_revision_and_bigger_not_better"]:
             labels.append(1)
-        else:  # zero shot with big model is best
+        elif row["revision_with_gemma_is_best"]:
             labels.append(2)
+        else:  # zero shot with big model is best
+            labels.append(3)
     dataset["labels"] = labels
     ds = Dataset.from_pandas(dataset)
     ds_split = ds.train_test_split(test_size=0.2, seed=42)

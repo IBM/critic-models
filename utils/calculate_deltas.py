@@ -26,7 +26,7 @@ def parse_scores(scores, tasks_list):
 
 if __name__ == '__main__':
     zero_shot_paths = {model: os.path.join(dir_name, prefix_0shot).format(model_name=model) for model in ["gemma-2-9b", "Llama-3.1-8B", "llama3.3-70b"]}
-    revision_paths = {(rev_model, gen_model): os.path.join(dir_revision_scores, prefix_revision).format(revision_model=rev_model, generator_model=gen_model) for rev_model in ["gemma-2-9b", "Llama-3.1-8B"] for gen_model in ["gemma-2-9b", "Llama-3.1-8B"]}
+    revision_paths = {(rev_model, gen_model): os.path.join(dir_revision_scores, prefix_revision).format(revision_model=rev_model, generator_model=gen_model) for rev_model in ["gemma-2-9b", "Llama-3.1-8B", "Qwen2.5-7b"] for gen_model in ["gemma-2-9b", "Llama-3.1-8B", "Qwen2.5-7b"]}
 
     random_path_from_dict = list(revision_paths.values())[0]
     with open(random_path_from_dict, "r") as f:
@@ -45,12 +45,15 @@ if __name__ == '__main__':
             json_scores = json.load(f)
         revision_scores[models] = parse_scores(json_scores, tasks_list)
 
-    all_predictions_paths = os.listdir("_output/modernbert_predictions")
+    pred_dir = "_output/modernbert_predictions"
+    # pred_dir = "_output/simple_classifiers"
+
+    all_predictions_paths = os.listdir(pred_dir)
     all_predictions_paths = [path for path in all_predictions_paths if path.endswith(".json")]
     all_predictions_paths.sort()
 
     # calculate_baselines
-    with open(f"_output/modernbert_predictions/{all_predictions_paths[0]}", "r") as f:
+    with open(f"{pred_dir}/{all_predictions_paths[0]}", "r") as f:
         predictions_example = json.load(f)
         all_tasks_in_test = list(predictions_example.keys())
 
@@ -99,7 +102,7 @@ if __name__ == '__main__':
     big_model_calls_preds = {}
     revision_calls_preds = {}
     for path in all_predictions_paths:
-        with open(f"_output/modernbert_predictions/{path}", "r") as f:
+        with open(f"{pred_dir}/{path}", "r") as f:
             predictions = json.load(f)
         pred_scores = []
         key_name = path.replace(".json", "")
@@ -176,6 +179,74 @@ if __name__ == '__main__':
     dataset["revision_with_gemma_is_best"] = revision_with_gemma_is_best
     dataset["inference_big_llama_0shot_is_best"] = inference_big_llama_0shot_is_best
     dataset.to_csv("_output/dataset.csv", index=False)
+
+    # prepare dataset of all small models refining llama3.1-8b
+    qwen_revise_gemma = np.array(revision_scores[("Qwen2.5-7b", "gemma-2-9b")])
+    llama_revise_gemma = np.array(revision_scores[("Llama-3.1-8B", "gemma-2-9b")])
+    gemma_revise_gemma = np.array(revision_scores[("gemma-2-9b", "gemma-2-9b")])
+    gemma_0shot = np.array(zero_shot_scores["gemma-2-9b"])
+    dataset = pd.DataFrame()
+    dataset["sample"] = tasks_list
+    dataset["gemma_0shot"] = gemma_0shot
+    dataset["qwen_revise_gemma"] = qwen_revise_gemma
+    dataset["llama_revise_gemma"] = llama_revise_gemma
+    dataset["gemma_revise_gemma"] = gemma_revise_gemma
+    best_revision_model = []
+    all_three_models_same = []
+    for _, row in dataset.iterrows():
+        revision_scores_current_row = np.array([row["qwen_revise_gemma"], row["llama_revise_gemma"], row["gemma_revise_gemma"]])
+        best_rev_score = revision_scores_current_row.max()
+        best_rev_models = revision_scores_current_row == best_rev_score
+        # if more than one, choose randomly
+        best_rev_model = np.random.choice(np.where(best_rev_models)[0])
+        best_revision_model.append(best_rev_model)
+        all_three_models_same.append(best_rev_models.sum() == 3)
+    dataset["label"] = best_revision_model
+    dataset["all_three_models_same"] = all_three_models_same
+
+    dataset.to_csv("_output/dataset_routing_same_size_gemma_generator.csv", index=False)
+
+
+    print("\npredictions (same size):")
+
+    test_tasks = []
+    predictions_dir = "_output/simple_classifiers_same_size"
+    for path in os.listdir(predictions_dir):
+        with open(f"{predictions_dir}/{path}", "r") as f:
+            predictions = json.load(f)
+        if len(test_tasks) == 0:
+            test_tasks = list(predictions.keys())
+        scores = []
+        for _, row in dataset.iterrows():
+            if row["sample"] not in test_tasks:
+                continue
+            pred = predictions[row["sample"]]
+            all_possible_scores = [row["qwen_revise_gemma"], row["llama_revise_gemma"], row["gemma_revise_gemma"]]
+            scores.append(all_possible_scores[pred])
+        print(f"{path.replace('.json', '')}: {np.mean(scores)}")
+
+    # same size baselines
+    dataset_reduced = dataset[dataset["sample"].isin(test_tasks)]
+
+    predict_all_qwen = np.mean(dataset_reduced["qwen_revise_gemma"])
+    predict_all_llama = np.mean(dataset_reduced["llama_revise_gemma"])
+    predict_all_gemma = np.mean(dataset_reduced["gemma_revise_gemma"])
+    gold = []
+    random = []
+    for _, row in dataset_reduced.iterrows():
+        all_possible_scores = [row["qwen_revise_gemma"], row["llama_revise_gemma"], row["gemma_revise_gemma"]]
+        gold.append(all_possible_scores[row["label"]])
+        random.append(all_possible_scores[np.random.randint(0, 3)])
+    gold_mean = np.mean(gold)
+    random_mean = np.mean(random)
+
+    print("baselines:")
+    print(f"predict_all_qwen: {predict_all_qwen}")
+    print(f"predict_all_llama: {predict_all_llama}")
+    print(f"predict_all_gemma: {predict_all_gemma}")
+    print(f"gold: {gold_mean}")
+    print(f"random: {random_mean}")
+
 
     print("\n\n")
     for col in dataset.columns[1:]:
