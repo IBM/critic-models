@@ -1,3 +1,4 @@
 .idea/
 slurm_logs/
 prepare_data/upload_data_to_hf.py
+*.npy
