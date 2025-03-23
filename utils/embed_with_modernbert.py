@@ -67,7 +67,7 @@ for task in data_with_embeddings["sample"]:
         print(concatenated_task_and_output)
     all_concat.append(concatenated_task_and_output)
 
-new_df = pd.DataFrame({"sample": all_concat, "only_task": data_with_embeddings["task"]})
+new_df = pd.DataFrame({"sample": all_concat, "only_task": data_with_embeddings["sample"]})
 new_ds = Dataset.from_pandas(new_df)
 print("Computing embeddings...")
 new_ds = new_ds.map(get_embeddings, batched=True, batch_size=BATCH_SIZE)
