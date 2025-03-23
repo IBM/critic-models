@@ -50,8 +50,7 @@ print("Computing embeddings...")
 data_with_embeddings = ds.map(get_embeddings, batched=True, batch_size=BATCH_SIZE)
 
 # save embeddings
-embeddings = np.concatenate(data_with_embeddings["embeddings"], axis=0)
-np.save("_output/modernbert_embeddings_tasks.npy", embeddings)
+np.save("_output/modernbert_embeddings_tasks.npy", data_with_embeddings["embeddings"])
 
 # save also tasks list for ordering
 tasks = data_with_embeddings["sample"]
@@ -71,5 +70,4 @@ new_df = pd.DataFrame({"sample": all_concat, "only_task": data_with_embeddings["
 new_ds = Dataset.from_pandas(new_df)
 print("Computing embeddings...")
 new_ds = new_ds.map(get_embeddings, batched=True, batch_size=BATCH_SIZE)
-embeddings = np.concatenate(new_ds["embeddings"], axis=0)
-np.save("_output/modernbert_embeddings_tasks_and_outputs.npy", embeddings)
+np.save("_output/modernbert_embeddings_tasks_and_outputs.npy", new_ds["embeddings"])
