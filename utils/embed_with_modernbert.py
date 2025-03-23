@@ -54,15 +54,15 @@ embeddings = np.concatenate(data_with_embeddings["embeddings"], axis=0)
 np.save("_output/modernbert_embeddings_tasks.npy", embeddings)
 
 # save also tasks list for ordering
-tasks = data_with_embeddings["task"]
+tasks = data_with_embeddings["sample"]
 with open("_output/tasks_list.json", "w") as f:
     json.dump(tasks, f)
 
 print("computing embeddings for tasks and outputs...")
 all_concat = []
-for task in data_with_embeddings["task"]:
+for task in data_with_embeddings["sample"]:
     concatenated_task_and_output = f"{task}\n\n{zero_shot_data[task][-1]['content']}"
-    if task == data_with_embeddings["task"][0]:
+    if task == data_with_embeddings["sample"][0]:
         print("example of concatenated task and output:")
         print(concatenated_task_and_output)
     all_concat.append(concatenated_task_and_output)
