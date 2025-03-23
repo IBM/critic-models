@@ -35,7 +35,7 @@ if "predictions_key" in zero_shot_data:
 
 # Function to get sentence embeddings
 def get_embeddings(batch):
-    inputs = tokenizer(batch["sample"], padding="true", truncation=True, return_tensors="pt")
+    inputs = tokenizer(batch["sample"], padding="longest", truncation=True, return_tensors="pt")
     inputs = {k: v.to(device) for k, v in inputs.items()}
 
     with torch.no_grad():
