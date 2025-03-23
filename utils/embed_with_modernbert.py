@@ -7,7 +7,7 @@ import json
 
 
 DATA_PATH = "_output/dataset.csv"
-ZERO_SHOT_PATH = "/cs/snapless/gabis/gililior/wild-if-eval-code/model_predictions/llama-3.1-8B-0shot-wild-if-eval.json"
+ZERO_SHOT_PATH = "/cs/snapless/gabis/gililior/wild-if-eval-code/model_predictions/Llama-3.1-8B-0shot-wild-if-eval.json"
 MODEL_NAME = "answerdotai/ModernBERT-base"
 BATCH_SIZE = 32
 
