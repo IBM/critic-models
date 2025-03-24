@@ -36,11 +36,15 @@ class OrigData(BaseDataset):
 
 class InitGenerationsRITS(ConstrainedGenerationClassificationRITS):
 
-    def __init__(self, model, data: OrigData):
+    def __init__(self, model, data: OrigData, name):
         super().__init__(data, model, max_new_tokens=1000)
+        self.name = name
 
     def get_name(self):
-        return f"domain-analysis-via-rits"
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
 
     def get_out_path(self, out_dir):
         dataset_name = self.dataset_name.split(os.sep)[-1].replace(".json", "")
@@ -114,7 +118,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     dataset = OrigData(args.data_path, args.split, args.tasks_key)
 
-    generator = InitGenerationsRITS(args.model, dataset)
+    generator = InitGenerationsRITS(args.model, dataset, f"domain-analysis-via-rits")
     out_path = generator.get_out_path(args.out_dir)
 
     all_tasks = sorted(set(generator.data.get_tasks_list()))
@@ -132,7 +136,7 @@ if __name__ == '__main__':
     for i in range(0, len(all_tasks), args.num_tasks_in_prompt):
         batch = all_tasks[i: i + args.num_tasks_in_prompt]
         task_list = "\n".join([f"Task #{i+1}. {task}" for i, task in enumerate(batch)])
-        prompt_lists.append(f"Each of the following tasks can be associated with a specific domain. " 
+        prompt_lists.append(f"Each of the following tasks can be associated with a specific domain. "
                      "Generate a list of 10 domains that best represent the domains associated with "
                        f"the tasks. Output only the list of domains, with no prefix or suffix. \nHere is the list of tasks:\n\n{task_list}.\nList of 10 domains:")
 
@@ -144,10 +148,12 @@ if __name__ == '__main__':
         all_results_dict = {**existing, **all_generated}
         generator.dump_results(args.out_dir, all_results_dict)
 
+    # all_results_dict = json.load(open('/Users/liate/PycharmProjects/critic-models/_output/domain-analysis-via-rits-llama3.1-70b.wild-if-eval.json'))
     Lists_of_domains = "\n\n".join([f"List {item[0]+1}: {item[1]}" for item in all_results_dict.items()])
-    prompt = f"Summarize the following lists of domains into a single list of 20 domains. Output only the summarizing list of 20 domains without any prefixes or suffixes. Here is ths list of domains::\n\n {Lists_of_domains}\n"
+    prompt = f"Summarize the following lists of domains into a single list of 20 domains. Output only the summarizing list of 20 domains without any prefixes or suffixes. Here are the lists of domains:\n\n {Lists_of_domains}\n"
     model_name = generator.model_name
     api_key = generator.get_api_key()
     base_url = generator.get_api_endpoint().format(generator.model_name_for_endpoint)
-    output = {'general_domains',infer_local(prompt, api_key, base_url, model_name)}
-    generator.dump_results(args.out_dir,output)
+    output = {'general_domains': infer_local(prompt, api_key, base_url, model_name)}
+    generator.set_name(f"domain-analysis-via-rits-summary")
+    generator.dump_results(args.out_dir, output)
