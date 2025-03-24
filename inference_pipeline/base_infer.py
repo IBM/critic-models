@@ -8,7 +8,7 @@ class InferenceBase:
     def __init__(self, model, base_model_for_lora, data_path):
         self.model_name = model
         self.base_model_for_lora = base_model_for_lora
-        self.sampling_params = SamplingParams(temperature=0, max_tokens=1000)
+        self.sampling_params = SamplingParams(temperature=0.7, max_tokens=1000)
         self.data_path = data_path
         self.data = self.load_data(self.data_path)
         self.inference_model = self.load_model()
