@@ -15,10 +15,34 @@ class InitialResponse(InferenceBase):
         
     def load_data(self, data_path):
         if os.path.exists(data_path):
-            data = load_from_disk(data_path)[self.split][self.tasks_key]
+            decomposition_ds = load_from_disk(data_path)[self.split]
         else:
-            data = load_dataset(data_path, split=self.split)[self.tasks_key]
-        return data
+            decomposition_ds = load_dataset(data_path, split=self.split)
+
+        # Load and filter the original dataset
+        orig_ds = load_dataset("lmsys/lmsys-chat-1m", split="train")
+        conversation_ids = set(decomposition_ds["conversation_id"])
+        orig_ds_filtered = orig_ds.filter(lambda x: x['conversation_id'] in conversation_ids)
+
+        def leave_only_first_request(example):
+            example["conversation"] = example["conversation"][0]["content"]
+            return example
+
+        # Keep only the first request in each conversation
+        orig_ds_cleaned = orig_ds_filtered.map(leave_only_first_request)
+        orig_ds_cleaned = orig_ds_cleaned.rename_column("conversation", "task")
+
+        # Convert decomposition dataset into a dictionary for fast lookup
+        decomposition_dict = {row["conversation_id"]: row for row in decomposition_ds}
+
+        # Merge decomposition with original dataset
+        def merge_examples(example):
+            match = decomposition_dict.get(example["conversation_id"], {})
+            return {**example, **match}
+
+        merged_dataset = orig_ds_cleaned.map(merge_examples)
+
+        return merged_dataset
 
     def get_key_in_out_dict(self):
         return "initial_responses"
