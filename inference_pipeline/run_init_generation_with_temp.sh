@@ -10,7 +10,7 @@
 #SBATCH --mail-user=gili.lior@mail.huji.ac.il
 #SBATCH --mail-type=ALL
 
-model_names=("meta-llama/Llama-3.1-8B-Instruct")
+model="meta-llama/Llama-3.1-8B-Instruct"
 
 dataset="gililior/wild-if-eval"
 tasks_key="task"
