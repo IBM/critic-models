@@ -50,7 +50,7 @@ class InitialResponse(InferenceBase):
     def get_data_for_inference(self):
         to_predict = []
         ordered_prompts = []
-        for prompt in self.data:
+        for prompt in self.data["task"]:
             to_predict.append(
                 [
                     {"role": "user", "content": prompt + " " + self.FORMAT_ANSWER}
