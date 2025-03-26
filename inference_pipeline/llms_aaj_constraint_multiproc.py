@@ -1,21 +1,24 @@
+import json
 import os
+import random
 from argparse import ArgumentParser
+from multiprocessing import Pool, cpu_count
+
+from datasets import load_dataset
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
+from openai import OpenAI
+from tqdm import tqdm
+
 from prepare_data.classify_constrained_generation_tasks import ConstrainedGenerationClassificationRITS
 from prepare_data.decompose_tasks import ArenaClassifiedData
 from utils.eval_consts import PROMPT_EVAL
-import random
-import json
-from multiprocessing import Pool, cpu_count
-from openai import OpenAI
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-from tqdm import tqdm
-from datasets import load_dataset
 
 class ConstraintData(ArenaClassifiedData):
-    def __init__(self, name_or_path, path_to_constraints, num_sample):
+    constraints: dict = {}
+
+    def __init__(self, name_or_path, num_sample):
         super().__init__(name_or_path)
-        constraints = self.load_data(path_to_constraints)
-        self.constraints = {k.strip(): constraints[k] for k in constraints}
+        self.load_constraints_from_hf()
         self.num_sample = num_sample
 
     def load_constraints_from_hf(self):
@@ -49,7 +52,6 @@ class ConstraintData(ArenaClassifiedData):
             task = sample["task"]
             if task not in self.constraints:
                 self.constraints[task] = sample["decomposition"]
-
 
     def load_data(self, name_or_path):
         with open(name_or_path, 'rt') as f:
@@ -179,7 +181,6 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--eval_model")
     parser.add_argument("--to_eval", help="path to the responses to evaluate")
-    parser.add_argument("--constraints", help="path to the constraints decomposition json")
     parser.add_argument("--sample", type=int, default=-1,
                         help="specify how many samples to evaluate")
     parser.add_argument("--tasks_batch_size", type=int, default=200,
@@ -187,7 +188,7 @@ if __name__ == '__main__':
     parser.add_argument("--out_dir", required=True)
     args = parser.parse_args()
     print(f"\n\n=======\nEVALUATING {args.to_eval} WITH {args.eval_model}")
-    dataset = ConstraintData(args.to_eval, args.constraints, args.sample)
+    dataset = ConstraintData(args.to_eval, args.sample)
 
     classifier = LLMJudgeConstraintsRITS(dataset, args.eval_model, max_new_tokens=5)
     out_path = classifier.get_out_path(args.out_dir)
