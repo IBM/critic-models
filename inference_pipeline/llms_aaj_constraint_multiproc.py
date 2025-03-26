@@ -9,7 +9,7 @@ from multiprocessing import Pool, cpu_count
 from openai import OpenAI
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 from tqdm import tqdm
-
+from datasets import load_dataset
 
 class ConstraintData(ArenaClassifiedData):
     def __init__(self, name_or_path, path_to_constraints, num_sample):
@@ -17,6 +17,39 @@ class ConstraintData(ArenaClassifiedData):
         constraints = self.load_data(path_to_constraints)
         self.constraints = {k.strip(): constraints[k] for k in constraints}
         self.num_sample = num_sample
+
+    def load_constraints_from_hf(self):
+        # Load the decomposition dataset
+        decomposition_ds = load_dataset("gililior/wild-if-eval", split="test")
+
+        # Load and filter the original dataset
+        orig_ds = load_dataset("lmsys/lmsys-chat-1m", split="train")
+        conversation_ids = set(decomposition_ds["conversation_id"])
+        orig_ds_filtered = orig_ds.filter(lambda x: x['conversation_id'] in conversation_ids)
+
+        # Keep only the first request in each conversation
+        def leave_only_first_request(example):
+            example["conversation"] = example["conversation"][0]["content"]
+            return example
+
+        orig_ds_cleaned = orig_ds_filtered.map(leave_only_first_request)
+        orig_ds_cleaned = orig_ds_cleaned.rename_column("conversation", "task")
+
+        # Convert decomposition dataset into a dictionary for fast lookup
+        decomposition_dict = {row["conversation_id"]: row for row in decomposition_ds}
+
+        # Merge decomposition with original dataset
+        def merge_examples(example):
+            match = decomposition_dict.get(example["conversation_id"], {})
+            return {**example, **match}
+
+        merged_dataset = orig_ds_cleaned.map(merge_examples)
+
+        for sample in merged_dataset:
+            task = sample["task"]
+            if task not in self.constraints:
+                self.constraints[task] = sample["decomposition"]
+
 
     def load_data(self, name_or_path):
         with open(name_or_path, 'rt') as f:
