@@ -32,7 +32,7 @@ class InferenceBase:
         elif 'phi' in self.model_name.lower():
             llm = LLM(model=self.model_name, tokenizer=self.model_name, trust_remote_code=True)
         else:
-            llm = LLM(model=self.model_name, tokenizer=self.model_name)
+            llm = LLM(model=self.model_name, tokenizer=self.model_name, max_model_len=16384)
         return llm
 
     def get_data_for_inference(self):
