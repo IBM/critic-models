@@ -45,7 +45,8 @@ def decompose_with_gpt4o(out_json, max_len):
     with open(out_json, "w") as f:
         json.dump(existing_json, f)
     path_to_ds = out_json.replace(".json", "-ds")
-    shutil.rmtree(path_to_ds)
+    if os.path.exists(path_to_ds):
+        shutil.rmtree(path_to_ds)
     ds = Dataset.from_list(list(existing_json.values()))
     ds.save_to_disk(path_to_ds)
 
