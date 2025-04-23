@@ -14,7 +14,10 @@ class OtherModelMultRevisions(MultipleIterationsInContext):
         if "prediction_keys" in dataset:
             dataset = dataset["prediction_keys"]
         self.initial_model = dataset["generator_model"]
-        print(dataset)
+        for prompt in dataset:
+            print(type(dataset[prompt]))
+            print(dataset[prompt])
+            break
         return dataset
 
     def get_key_in_out_dict(self):
@@ -26,9 +29,8 @@ class OtherModelMultRevisions(MultipleIterationsInContext):
         for prompt in self.data:
             conversation = []
             count_assistant_messages = -1
-            print(self.data[prompt])
             for msg in self.data[prompt]:
-                print(msg)
+                print(self.data[prompt])
                 if msg["role"] == "user":
                     conversation.append(msg)
                 else: # assistant
