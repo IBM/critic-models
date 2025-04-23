@@ -1,8 +1,7 @@
-import shutil
 from argparse import ArgumentParser
 
 from openai import OpenAI
-from datasets import load_dataset, Dataset, load_from_disk, concatenate_datasets
+from datasets import load_dataset
 import os
 from utils.filter_data_consts import DECOMPOSE_PROMPT, filter_answer
 from tqdm import tqdm
