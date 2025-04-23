@@ -42,7 +42,7 @@ for starting_index in "0 1"; do
       if [ $index -eq $task_id ]; then
         if [ ! -f $out_path ]; then
           echo "Running combination: generator=$generator, revision_model=$revision_model"
-          ./inference_pipeline/run_single_revision_one_step.sh $path_to_init_response_generator $revision_model $out_path $num_iterations $starting_index
+          ./inference_pipeline/run_cross_model_revision_mult.sh $path_to_init_response_generator $revision_model $out_path $num_iterations $starting_index
           exit 0
         fi
       fi
