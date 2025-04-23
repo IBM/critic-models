@@ -83,3 +83,22 @@ def get_bad_words():
         bad_words = f.readlines()
     bad_words = [w.strip() for w in bad_words]
     return bad_words
+
+import re
+
+
+def filter_answer(text):
+    if "Translated Constraints:" not in text:
+        return []
+    index = text.find("Translated Constraints:") + len("Translated Constraints:")
+    answer = text[index:].strip()
+    list_items = re.split(r'(?=\n\d+\.\s*[A-Z])', answer)
+
+    # Remove empty strings from the list
+    list_items = [item.strip() for item in list_items if item]
+
+    # Remove numbers from the list items
+    list_items = [re.sub(r'^\d+\.', '', item).strip() for item in list_items]
+    if "" in list_items:
+        print(answer)
+    return list_items
