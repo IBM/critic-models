@@ -28,6 +28,8 @@ index=0
 num_iterations=4
 
 for starting_index in 0 1; do
+  out_dir_shot="${out_dir}/-${starting_index}shot"
+  mkdir -p $out_dir_shot
   for ((i=0; i<${#models[@]}; i++)); do
     for ((j=0; j<${#models[@]}; j++)); do
       if [ $i -eq $j ]; then
@@ -38,7 +40,7 @@ for starting_index in 0 1; do
       generator_no_family=$(echo $generator | sed 's/.*\///')
       revision_no_family=$(echo $revision_model | sed 's/.*\///')
       path_to_init_response_generator="${init_response_dir}/${generator_no_family}.json"
-      out_path="${out_dir}/${revision_no_family}-revise-multiple-${generator_no_family}.json"
+      out_path="${out_dir_shot}/${revision_no_family}-revise-multiple-${generator_no_family}.json"
       if [ $index -eq $task_id ]; then
         if [ ! -f $out_path ]; then
           echo "Running combination: generator=$generator, revision_model=$revision_model, num_iterations=$num_iterations, starting_index=$starting_index"
