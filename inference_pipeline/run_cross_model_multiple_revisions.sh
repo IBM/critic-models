@@ -28,7 +28,7 @@ index=0
 num_iterations=4
 
 for starting_index in 0 1; do
-  out_dir_shot="${out_dir}/-${starting_index}shot"
+  out_dir_shot="${out_dir}/${starting_index}shot"
   mkdir -p $out_dir_shot
   for ((i=0; i<${#models[@]}; i++)); do
     for ((j=0; j<${#models[@]}; j++)); do
