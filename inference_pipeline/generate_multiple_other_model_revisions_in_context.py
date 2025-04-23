@@ -11,10 +11,10 @@ class OtherModelMultRevisions(MultipleIterationsInContext):
     def load_data(self, data_path):
         with open(data_path, "r") as f:
             dataset = json.load(f)
-        if "prediction_keys" in dataset:
-            dataset = dataset[dataset["prediction_keys"]]
         self.initial_model = dataset["generator_model"]
-        return dataset
+        if "predictions_key" in dataset:
+            generations = dataset[dataset["predictions_key"]]
+        return generations
 
     def get_key_in_out_dict(self):
         return "multiple_other_model_revisions"
