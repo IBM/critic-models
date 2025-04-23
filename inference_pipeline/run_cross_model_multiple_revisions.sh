@@ -12,7 +12,7 @@
 
 models=("meta-llama/Llama-3.1-8B-Instruct" "meta-llama/Llama-3.2-3B-Instruct" "google/gemma-3-4b-it", "google/gemma-3-12b-it")
 
-init_response_dir="/cs/snapless/gabis/gililior/if-eval-generations/multiple_revisions/"
+init_response_dir="/cs/snapless/gabis/gililior/if-eval-generations/multiple_revisions"
 out_dir="/cs/snapless/gabis/gililior/if-eval-generations/cross-model-revisions"
 mkdir -p $out_dir
 mkdir -p slurm_logs
