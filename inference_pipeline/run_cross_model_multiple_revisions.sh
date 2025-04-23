@@ -41,7 +41,7 @@ for starting_index in "0 1"; do
       out_path="${out_dir}/${revision_no_family}-revise-multiple-${generator_no_family}.json"
       if [ $index -eq $task_id ]; then
         if [ ! -f $out_path ]; then
-          echo "Running combination: generator=$generator, revision_model=$revision_model"
+          echo "Running combination: generator=$generator, revision_model=$revision_model, num_iterations=$num_iterations, starting_index=$starting_index"
           ./inference_pipeline/run_cross_model_revision_mult.sh $path_to_init_response_generator $revision_model $out_path $num_iterations $starting_index
           exit 0
         fi
