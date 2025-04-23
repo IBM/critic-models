@@ -14,6 +14,7 @@ class OtherModelMultRevisions(MultipleIterationsInContext):
         if "prediction_keys" in dataset:
             dataset = dataset["prediction_keys"]
         self.initial_model = dataset["generator_model"]
+        print(dataset)
         return dataset
 
     def get_key_in_out_dict(self):
