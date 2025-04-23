@@ -44,14 +44,13 @@ class MultipleIterationsInContext(InferenceBase):
         print("processing prompts...")
 
         print("generating responses...")
-        outputs = self.inference_model.chat(messages=to_predict, sampling_params=self.sampling_params, use_tqdm=True)
         for j in range(self.num_iterations):
+            outputs = self.inference_model.chat(messages=to_predict, sampling_params=self.sampling_params,
+                                                use_tqdm=True)
             for i, prompt in enumerate(ordered_prompts):
                 response = outputs[i].outputs[0].text
                 to_predict[i].append({"role": "assistant", "content": response})
                 to_predict[i].append({"role": "user", "content": REVISION_PROMPT.format(instruction=prompt)})
-            outputs = self.inference_model.chat(messages=to_predict, sampling_params=self.sampling_params,
-                                                use_tqdm=True)
 
         return to_predict
 
