@@ -10,7 +10,7 @@
 #SBATCH --mail-user=gili.lior@mail.huji.ac.il
 #SBATCH --mail-type=ALL
 
-models=("meta-llama/Llama-3.1-8B-Instruct" "meta-llama/Llama-3.2-3B-Instruct" "google/gemma-3-4b-it", "google/gemma-3-12b-it")
+models=("meta-llama/Llama-3.1-8B-Instruct" "meta-llama/Llama-3.2-3B-Instruct" "google/gemma-3-4b-it" "google/gemma-3-12b-it")
 
 init_response_dir="/cs/snapless/gabis/gililior/if-eval-generations/multiple_revisions"
 out_dir="/cs/snapless/gabis/gililior/if-eval-generations/cross-model-revisions"
