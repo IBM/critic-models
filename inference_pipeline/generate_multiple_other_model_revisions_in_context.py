@@ -13,8 +13,8 @@ class OtherModelMultRevisions(MultipleIterationsInContext):
             dataset = json.load(f)
         self.initial_model = dataset["generator_model"]
         if "predictions_key" in dataset:
-            generations = dataset[dataset["predictions_key"]]
-        return generations
+            dataset = dataset[dataset["predictions_key"]]
+        return dataset
 
     def get_key_in_out_dict(self):
         return "multiple_other_model_revisions"
