@@ -27,7 +27,7 @@ index=0
 
 num_iterations=4
 
-for starting_index in "0 1"; do
+for starting_index in 0 1; do
   for ((i=0; i<${#models[@]}; i++)); do
     for ((j=0; j<${#models[@]}; j++)); do
       if [ $i -eq $j ]; then
