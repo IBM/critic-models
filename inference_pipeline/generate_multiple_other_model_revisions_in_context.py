@@ -25,7 +25,7 @@ class OtherModelMultRevisions(MultipleIterationsInContext):
         for prompt in self.data:
             conversation = []
             count_assistant_messages = -1
-            for msg in prompt["conversation"]:
+            for msg in self.data[prompt]:
                 if msg["role"] == "user":
                     conversation.append(msg)
                 else: # assistant
