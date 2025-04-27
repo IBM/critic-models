@@ -30,11 +30,12 @@ def decompose_with_gpt4o(out_json, max_len):
             max_tokens=500
         )
         answer = completion.choices[0].message.content
-        filtered_answer = filter_answer(answer)
+        try:
+            filtered_answer = filter_answer(answer)
+        except Exception as e:
+            filtered_answer = []
         existing_json[id_conv] = {"conversation_id": id_conv, "task": task, "raw_answer": answer,
                                   "gpt4_constraints": filtered_answer, "llama3.1-8b_constraints": row["decomposition"]}
-        if len(existing_json) >= 1:
-            break
         if len(existing_json) % 20 == 0:
             print(f"saving another 20 tasks")
             with open(out_json, "w") as f:
