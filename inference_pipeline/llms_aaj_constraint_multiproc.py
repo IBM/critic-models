@@ -13,6 +13,9 @@ from prepare_data.classify_constrained_generation_tasks import ConstrainedGenera
 from prepare_data.decompose_tasks import ArenaClassifiedData
 from utils.eval_consts import PROMPT_EVAL
 
+DS_NAME = "gililior/wild-if-eval"
+DS_NAME = "gililior/wild-if-eval-gpt-decomposition"
+
 class ConstraintData(ArenaClassifiedData):
     constraints: dict = {}
 
@@ -23,7 +26,7 @@ class ConstraintData(ArenaClassifiedData):
 
     def load_constraints_from_hf(self):
         # Load the decomposition dataset
-        decomposition_ds = load_dataset("gililior/wild-if-eval", split="test")
+        decomposition_ds = load_dataset(DS_NAME, split="test")
 
         # Load and filter the original dataset
         orig_ds = load_dataset("lmsys/lmsys-chat-1m", split="train")
