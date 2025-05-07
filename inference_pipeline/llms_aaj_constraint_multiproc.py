@@ -13,8 +13,9 @@ from prepare_data.classify_constrained_generation_tasks import ConstrainedGenera
 from prepare_data.decompose_tasks import ArenaClassifiedData
 from utils.eval_consts import PROMPT_EVAL
 
-DS_NAME = "gililior/wild-if-eval"
-DS_NAME = "gililior/wild-if-eval-gpt-decomposition"
+# DS_NAME = "gililior/wild-if-eval"
+# DS_NAME = "gililior/wild-if-eval-gpt-decomposition"
+DS_NAME = "gililior/subset_wild_if_eval_gpt_decomposition"
 
 class ConstraintData(ArenaClassifiedData):
     constraints: dict = {}
