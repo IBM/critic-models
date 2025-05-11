@@ -110,7 +110,9 @@ class ConstrainedGenerationClassification:
 
     @staticmethod
     def get_model_name_in_server(model_name):
-        if model_name == 'llama3-70b':
+        if "gpt-" in model_name:
+            return model_name
+        elif model_name == 'llama3-70b':
             full_name = 'meta-llama/llama-3-70b-instruct'
         elif model_name == 'llama3.1-70b':
             full_name = 'meta-llama/llama-3-1-70b-instruct'

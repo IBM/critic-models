@@ -6,7 +6,7 @@ from multiprocessing import Pool, cpu_count
 
 from datasets import load_dataset
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-from openai import OpenAI
+from openai import AzureOpenAI, BadRequestError
 from tqdm import tqdm
 
 from prepare_data.classify_constrained_generation_tasks import ConstrainedGenerationClassificationRITS
@@ -19,7 +19,7 @@ from inference_pipeline.llms_aaj_constraint_multiproc import ConstraintData, LLM
 def infer_local(task, response, atomic, model_name):
     message = PROMPT_EVAL.format(instruction=task, response=response, constraint=atomic) 
     message = [{'role': 'user', 'content': message}]
-    client = OpenAI()
+    client = AzureOpenAI(api_version="2025-03-01-preview")
 
     gen_params = {
         GenParams.MAX_NEW_TOKENS: 5,
@@ -60,34 +60,34 @@ def infer_local(task, response, atomic, model_name):
 
     return results_for_atomic, explanations_for_atomic
 
+
 def generate_parallel(obj, tasks):
     model_name = obj.model_name
     all_results = {}
     all_args = {}
     total = 0
-    client = OpenAI()
     skipped = 0
     for task in tasks:
-        response = obj.data.get_response(task)
-        response_moderation = client.moderations.create(
-            model="omni-moderation-latest",
-            input=task,
-        )
-        if response_moderation.results[0].flagged:
-            skipped += 1
-            continue
         all_args[task] = {}
+        response = obj.data.get_response(task)
         for atomic in obj.data.get_constraints(task):
             all_args[task][atomic] = (task, response, atomic)
             total += 1
-    print(f"skipped {skipped} tasks due to moderation")
     pbar = tqdm(total=total)
     for task in all_args:
         all_results[task] = {}
         for atomic in all_args[task]:
             arguments = all_args[task][atomic] + (model_name,)
-            all_results[task][atomic] = infer_local(*arguments)
-            pbar.update(1)
+            try:
+                res = infer_local(*arguments)
+                all_results[task][atomic] = res
+                pbar.update(1)
+            except BadRequestError:
+                skipped += 1
+                all_results.pop(task)
+                break
+    if skipped:
+        print(f"skipped {skipped} tasks due to moderation")
     print("DONE")
     return all_results
 
@@ -101,6 +101,7 @@ def process_results(all_results):
             processed_results[task]["scores"][atomic] = result[0]
             processed_results[task]["explanations"][atomic] = result[1]
     return processed_results
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
