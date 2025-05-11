@@ -65,12 +65,22 @@ def generate_parallel(obj, tasks):
     all_results = {}
     all_args = {}
     total = 0
+    client = OpenAI()
+    skipped = 0
     for task in tasks:
-        all_args[task] = {}
         response = obj.data.get_response(task)
+        response_moderation = client.moderations.create(
+            model="omni-moderation-latest",
+            input=task,
+        )
+        if response_moderation.results[0].flagged:
+            skipped += 1
+            continue
+        all_args[task] = {}
         for atomic in obj.data.get_constraints(task):
             all_args[task][atomic] = (task, response, atomic)
             total += 1
+    print(f"skipped {skipped} tasks due to moderation")
     pbar = tqdm(total=total)
     for task in all_args:
         all_results[task] = {}
