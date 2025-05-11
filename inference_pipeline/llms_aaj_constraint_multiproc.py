@@ -72,7 +72,7 @@ class ConstraintData(ArenaClassifiedData):
         return self.data[task][-1]["content"]
 
     def get_tasks_list(self):
-        list_of_tasks = list(self.data.keys())
+        list_of_tasks = list(self.constraints.keys())
         if self.num_sample > -1:
             tasks = sorted(list_of_tasks)
             list_of_tasks = random.Random(42).sample(tasks, k=self.num_sample)
