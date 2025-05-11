@@ -122,4 +122,3 @@ if __name__ == '__main__':
         all_generated = {**all_generated, **batch_generated}
         all_results_dict = {**existing, **process_results(all_generated)}
         classifier.dump_results(args.out_dir, all_results_dict)
-        break
